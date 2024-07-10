@@ -1,4 +1,5 @@
 var mongoose = require("mongoose");
+var schemaBaseOptions = require("../lib/schemaBaseOptions");
 
 var Schema = mongoose.Schema;
 
@@ -8,7 +9,7 @@ var movieSchema = new Schema({
         "thumbsUp": Number,
         "thumbsDown": Number,
         "date_added": String,
-});
+}, schemaBaseOptions);
 
 var Movie = mongoose.model("Movie", movieSchema);
 

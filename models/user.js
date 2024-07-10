@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
-
 const bcrypt = require('bcrypt');
+const schemaBaseOptions = require('../lib/schemaBaseOptions');
 
 const Schema = mongoose.Schema;
 
@@ -14,7 +14,7 @@ const UserSchema = new Schema({
     type: String,
     required: true
   }
-});
+}, schemaBaseOptions);
 
 // bcrypt trigger (pre-hook) for storing passwords
 UserSchema.pre(
