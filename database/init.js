@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-var dotenv = require("dotenv").config();
 
 const DB_CONNECTION_STRING =
   `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PWD}@nodejs.tk4ldce.mongodb.net/?retryWrites=true&w=majority&appName=NodeJS`;
