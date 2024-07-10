@@ -2,9 +2,6 @@ var Movie = require("../models/movie");
 
 module.exports = {
     movieConverter : async function (tmdbMovie){
-        console.log("movieConverter");
-        //console.log(tmdbMovie);
-
         var movie = await Movie.create({
             "id_external": tmdbMovie.id,
             "backdrop_path": tmdbMovie.backdrop_path,

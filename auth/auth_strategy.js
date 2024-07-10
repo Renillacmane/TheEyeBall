@@ -1,18 +1,15 @@
 const passport = require('passport');
 const localStrategy = require('passport-local').Strategy;
-const UserModel = require('../models/model');
+const UserModel = require('../models/user');
 const JWTstrategy = require('passport-jwt').Strategy;
 const ExtractJWT = require('passport-jwt').ExtractJwt;
+var dotenv = require("dotenv").config();
 
-/**
- * TODO - Move to `.env` file.
- */
-const JWT_SECRET = 'TOP_SECRET';
-const APP_NAME = 'Awesome APP';
+const JWT_SECRET = process.env.JWT_SECRET;
+const APP_NAME = process.env.APP_NAME;
 
 // Passport middleware to handle user registration
-passport.use(
-    'signup',
+passport.use('signup',
     new localStrategy(
       {
         usernameField: 'email',
@@ -33,8 +30,7 @@ passport.use(
 );
 
   //  Passport middleware to handle user login
-passport.use(
-    'login',
+passport.use('login',
     new localStrategy(
         {
         usernameField: 'email',
@@ -47,13 +43,13 @@ passport.use(
             const user = await UserModel.findOne({ email });
 
             if (!user) {
-            return done(null, false, { message: 'User not found' });
+                return done(null, false, { message: 'User not found' });
             }
 
             const validate = await user.isValidPassword(password);
 
             if (!validate) {
-            return done(null, false, { message: 'Wrong Password' });
+                return done(null, false, { message: 'Wrong Password' });
             }
 
             return done(null, user, { message: 'Logged in Successfully' });
@@ -64,18 +60,33 @@ passport.use(
     )
 );
 
+// useful for testing
+var cookieExtractor = function(req) {
+
+    console.log(req);
+
+    var token = null;
+    if (req && req.cookies) {
+        token = req.cookies['jwt'];
+    }
+    return token;
+};
+//opts.jwtFromRequest = cookieExtractor;
+
 passport.use(
-  new JWTstrategy(
+  new JWTstrategy(  
     {
       secretOrKey: JWT_SECRET,
-      jwtFromRequest: ExtractJWT.fromUrlQueryParameter('secret_token'),
-      // jwtFromRequest: ExtractJWT.fromAuthHeaderAsBearerToken(), // o luis pos diferente
+      jwtFromRequest: ExtractJWT.fromAuthHeaderAsBearerToken(),
       issuer: APP_NAME,
     },
     async (token, done) => {
       try {
+        console.log("Auth successful");
         return done(null, token.user);
       } catch (error) {
+        console.log(error);
+
         done(error);
       }
     }

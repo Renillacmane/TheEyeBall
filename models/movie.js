@@ -3,18 +3,11 @@ var mongoose = require("mongoose");
 var Schema = mongoose.Schema;
 
 var movieSchema = new Schema({
-        "backdrop_path": String,
-        "genre_ids": [],
-        "id": Number,
-        "original_language": String,
-        "original_title": String,
-        "overview": String,
-        "popularity": Number,
-        "poster_path": String,
-        "release_date": String,
-        "title": String,
+        "id_external": String,
+        //"title": String,
         "thumbsUp": Number,
-        "thumbsDown": Number
+        "thumbsDown": Number,
+        "date_added": String,
 });
 
 var Movie = mongoose.model("Movie", movieSchema);

@@ -1,10 +1,14 @@
 const mongoose = require('mongoose');
+var dotenv = require("dotenv").config();
 
-/**
- * TODO - Move to `.env` file.
- */
 const DB_CONNECTION_STRING =
-  'mongodb+srv://rlacmane:PApI6TibemNQqHCD@nodejs.tk4ldce.mongodb.net/?retryWrites=true&w=majority&appName=NodeJS';
+  `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PWD}@nodejs.tk4ldce.mongodb.net/?retryWrites=true&w=majority&appName=NodeJS`;
 
 mongoose.connect(DB_CONNECTION_STRING);
+mongoose.connection.on('connected', function() {
+    console.log("Connection to DB established successfully...");
+});
 mongoose.connection.on('error', (error) => console.log(error));
+// mongoose.Promise = global.Promise;
+
+

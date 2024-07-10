@@ -1,13 +1,11 @@
 const express = require('express');
 const passport = require('passport');
 const jwt = require('jsonwebtoken');
+var dotenv = require("dotenv").config();
 
-/**
- * Move to `.env` file.
- */
-const JWT_SECRET = 'TOP_SECRET';
-const JWT_EXPIRES_IN = '1m'; // For debugging
-const APP_NAME = 'Awesome APP';
+const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN; // For debugging
+const APP_NAME = process.env.APP_NAME;
 
 const router = express.Router();
 
@@ -15,8 +13,7 @@ const missingFieldError = (res, fieldName) =>
   res.status(400).json({ message: `Field '${fieldName}' is missing.` });
 
 // Signup endpoint for the user
-router.post(
-    '/signup',
+router.post('/signup',
       passport.authenticate('signup',
       { session: false }),
       async (req, res, next) => {
@@ -63,12 +60,10 @@ router.post( '/login', (req, res, next) => {
                 console.error(err);
                 return res.status(500).json({ message: 'Unknown Error' });
               }
-              res.status(200).json({ data: token });
-            });
 
-          return res.json({ token });
-        }
-      );
+              return res.status(200).json({ data: token });
+            });
+        });
     } catch (error) {
       return next(error);
     }

@@ -15,18 +15,12 @@ var moviesRouter = require('./routes/movies');
 
 // database
 require('./database/init');
-require('./auth/auth');
-//console.log(process.env.DB_USER);
-//console.log(process.env.DB_PWD);
-var connStr = util.format(process.env.DbConnectionString, process.env.DB_USER, process.env.DB_PWD);
-console.log(connStr);
-mongoose.connect(connStr);
+
+// authentication strategy
+require('./auth/auth_strategy');
 
 const error = require('./middleware/error');
 const cors = require('./middleware/cors');
-
-mongoose.connection.on('error', error => console.log(error) );
-// mongoose.Promise = global.Promise;
 
 var app = express();
 
