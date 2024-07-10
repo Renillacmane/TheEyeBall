@@ -1,14 +1,9 @@
 var express = require('express');
 var path = require('path');
-var cookieParser = require('cookie-parser');
 var logger = require('morgan');
-var dotenv = require("dotenv").config();
-var util = require("util");
-var mongoose = require("mongoose");
 
 const passport = require('passport');
 
-var indexRouter = require('./routes/index');
 var authRouter = require('./routes/authentication');
 var usersRouter = require('./routes/users');
 var moviesRouter = require('./routes/movies');
@@ -28,7 +23,6 @@ var app = express();
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 //app.use('/', indexRouter);
