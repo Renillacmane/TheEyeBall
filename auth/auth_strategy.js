@@ -3,7 +3,6 @@ const localStrategy = require('passport-local').Strategy;
 const UserModel = require('../models/user');
 const JWTstrategy = require('passport-jwt').Strategy;
 const ExtractJWT = require('passport-jwt').ExtractJwt;
-var dotenv = require("dotenv").config();
 
 const JWT_SECRET = process.env.JWT_SECRET;
 const APP_NAME = process.env.APP_NAME;

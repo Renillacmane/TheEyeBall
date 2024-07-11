@@ -1,4 +1,5 @@
 var mongoose = require("mongoose");
+var schemaBaseOptions = require("../lib/schemaBaseOptions");
 
 var Schema = mongoose.Schema;
 
@@ -8,7 +9,7 @@ var userReactionSchema = new Schema({
     "id_movie": String,
     "type": Number,
     "date": String,
-});
+}, schemaBaseOptions);
 
 var UserReaction = mongoose.model("UserReaction", userReactionSchema);
 

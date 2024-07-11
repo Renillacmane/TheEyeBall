@@ -1,6 +1,5 @@
 var http = require("http");
 var util = require("../utils/util");
-var config = require("dotenv").config();
 var axios = require('axios');
 
 var options = {
@@ -10,7 +9,7 @@ var options = {
     port: null,
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJiOWVjMjBmZjZmOTgzM2IyNmQ0ZmNhZDBlMjJiZTMwMSIsIm5iZiI6MTcyMDAwNzQwNi4zMjc2NDYsInN1YiI6IjY2ODUzMmQ5YTM5NDMzYTA2MWJiMDFmNSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.rFO8dj4nAjNuOavUFJCyAoUvsi3NkDfBuIxyQoinjz0'
+      'Authorization': `Bearer ${process.env.API_KEY}`
     },
   };
 
@@ -46,7 +45,6 @@ module.exports = {
   },
 
   getUpcomingAxios : async function(){
-    let data = '';
     options.hostname = null;
     options.method = 'GET';
     options.url = process.env.HOSTNAME + "/" + process.env.API_VERSION + process.env.PATH_UPCOMING_MOVIE,
