@@ -5,14 +5,20 @@ const schemaBaseOptions = require('../lib/schemaBaseOptions');
 const Schema = mongoose.Schema;
 
 const UserSchema = new Schema({
+  firstName: {
+    type: String,
+  },
+  lastName: {
+    type: String,
+  },
   email: {
     type: String,
     required: true,
-    unique: true
+    unique: true,
   },
   password: {
     type: String,
-    required: true
+    required: true,
   }
 }, schemaBaseOptions);
 
@@ -30,10 +36,12 @@ UserSchema.pre(
 
 // password comparison
 UserSchema.methods.isValidPassword = async function(password) {
-  const user = this;
-  const compare = await bcrypt.compare(password, user.password);
+  let user = this;
 
-  return compare;
+  console.log(user);
+
+  let isValid = await bcrypt.compare(password, user.password);
+  return isValid;
 }
 
 const UserModel = mongoose.model('user', UserSchema);

@@ -1,6 +1,7 @@
 const express = require('express');
 const passport = require('passport');
 const jwt = require('jsonwebtoken');
+const UserModel = require('../models/user');
 
 const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN; // For debugging
@@ -17,6 +18,13 @@ router.post('/signup',
       { session: false }),
       async (req, res, next) => {
           console.log("Attempt signup");
+          
+          const email =  req.user.email;
+          const user = await UserModel.findOne({ email });
+          user.firstName = req.user.firstName = req.body.firstName;
+          user.lastName = req.user.lastName = req.body.lastName;
+          await user.save();
+          
           res.json({
               message: 'Signup successful',
               user: req.user

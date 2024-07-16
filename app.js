@@ -1,3 +1,5 @@
+require("dotenv").config();
+
 var express = require('express');
 var path = require('path');
 var logger = require('morgan');
@@ -9,6 +11,7 @@ var authRouter = require('./routes/authentication');
 var usersRouter = require('./routes/users');
 var moviesRouter = require('./routes/movies');
 
+
 // database
 require('./database/init');
 
@@ -18,6 +21,7 @@ require('./auth/auth_strategy');
 const error = require('./middleware/error');
 const cors = require('./middleware/cors');
 
+
 var app = express();
 
 // Interceptors
@@ -26,6 +30,7 @@ app.use(helmet());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(cors);
 
 //app.use('/', indexRouter);
 app.use('/', authRouter);
