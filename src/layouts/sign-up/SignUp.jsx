@@ -14,7 +14,8 @@ import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import axios from 'axios';
-//import _ from '../../env.js';
+import { useNavigate } from "react-router-dom";
+import { redirect } from "react-router-dom";
 
 
 // Passar para um component
@@ -36,8 +37,7 @@ const defaultTheme = createTheme();
 export default function SignUp() {
   let postOptions = {
     method: "POST",
-    //url: `${process.env.BE_ADDRESS}/signup`,
-    url: "http://localhost:3000/signup",
+    url: `${import.meta.env.VITE_BE_ADDRESS}/signup`,
     headers: {
       'Content-Type': 'application/json',
       'Access-Control-Allow-Origin': '*',
@@ -45,18 +45,25 @@ export default function SignUp() {
   }
 
   const postSignUp = async (details) => {
-    postOptions.data = details;
     try{
+      postOptions.data = details;
+
+      console.log("sending data...");
+
       let res = await axios(postOptions);
-      console.log(res.data);
+      // Acho que devia ter aqui tratamento com uma mensagem de sucesso
+      
+      //return res;
     }
     catch(err){
       console.log(err);
     }
   }
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
+  const handleSubmit = async (event) => {
+    //event.preventDefault();
+
+    //const navigate = useNavigate();
     const data = new FormData(event.currentTarget);
     let details = {
       firstName: data.get('firstName'),
@@ -67,7 +74,20 @@ export default function SignUp() {
     
     console.log(details);  
     
-    postSignUp(details);
+    //await postSignUp(details);
+
+    console.log("result received. redirectiong...");
+    
+    if (true) {
+        console.log("result received. redirectiong...");
+
+        redirect('/index.html')
+
+      } else {
+        window.alert('Wrong email or password')
+      }
+    
+    console.log("Success");
   };
 
   
@@ -144,7 +164,7 @@ export default function SignUp() {
             </Button>
             <Grid container justifyContent="flex-end">
               <Grid item>
-                <Link href="#" variant="body2">
+                <Link href="/index.html" variant="body2">
                   Already have an account? Sign in
                 </Link>
               </Grid>
