@@ -5,92 +5,71 @@ import CssBaseline from '@mui/material/CssBaseline';
 import TextField from '@mui/material/TextField';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
-import Link from '@mui/material/Link';
+import { Link } from 'react-router-dom';
 import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import VideoSettingsIcon from '@mui/icons-material/VideoSettings';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
+import Alert from '@mui/material/Alert';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import axios from 'axios';
 import { useNavigate } from "react-router-dom";
-import { redirect } from "react-router-dom";
-
-
-// Passar para um component
-// function Copyright(props) {
-//   return (
-//     <Typography variant="body2" color="text.secondary" align="center" {...props}>
-//       {'Copyright © '}
-//       <Link color="inherit" href="https://mui.com/">
-//         Your Website
-//       </Link>{' '}
-//       {new Date().getFullYear()}
-//       {'.'}
-//     </Typography>
-//   );
-// }
+import apiClient from '../../services/api';
 
 const defaultTheme = createTheme();
 
 export default function SignUp() {
-  let postOptions = {
-    method: "POST",
-    url: `${import.meta.env.VITE_BE_ADDRESS}/signup`,
-    headers: {
-      'Content-Type': 'application/json',
-      'Access-Control-Allow-Origin': '*',
-    },
-  }
-
-  const postSignUp = async (details) => {
-    try{
-      postOptions.data = details;
-
-      console.log("sending data...");
-
-      let res = await axios(postOptions);
-      // Acho que devia ter aqui tratamento com uma mensagem de sucesso
-      
-      //return res;
-    }
-    catch(err){
-      console.log(err);
-    }
-  }
+  const navigate = useNavigate();
+  const [error, setError] = React.useState('');
+  const [success, setSuccess] = React.useState(false);
+  const [loading, setLoading] = React.useState(false);
 
   const handleSubmit = async (event) => {
-    //event.preventDefault();
+    event.preventDefault();
+    setError('');
+    setSuccess(false);
+    setLoading(true);
 
-    //const navigate = useNavigate();
     const data = new FormData(event.currentTarget);
-    let details = {
+    const details = {
       firstName: data.get('firstName'),
       lastName: data.get('lastName'),
       email: data.get('email'),
       password: data.get('password'),
     };
-    
-    console.log(details);  
-    
-    //await postSignUp(details);
 
-    console.log("result received. redirectiong...");
-    
-    if (true) {
-        console.log("result received. redirectiong...");
+    // Validate inputs
+    if (!details.firstName || !details.lastName || !details.email || !details.password) {
+      setError('Please fill in all fields');
+      setLoading(false);
+      return;
+    }
 
-        redirect('/index.html')
+    if (details.password.length < 6) {
+      setError('Password must be at least 6 characters');
+      setLoading(false);
+      return;
+    }
 
-      } else {
-        window.alert('Wrong email or password')
-      }
-    
-    console.log("Success");
+    try {
+      await apiClient.post('/signup', details);
+      setSuccess(true);
+      // Wait for 2 seconds to show success message before redirecting
+      navigate('/signin', { state: { message: 'Registration successful! Please sign in.' } });
+    } catch (err) {
+      setError(err.response?.data?.error?.message || 'Registration failed. Please try again.');
+      console.error('Signup error:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  
+  const handleInputChange = () => {
+    setError('');
+    setSuccess(false);
+  };
+
   return (
     <ThemeProvider theme={defaultTheme}>
       <Container component="main" maxWidth="xs">
@@ -120,6 +99,9 @@ export default function SignUp() {
                   id="firstName"
                   label="First Name"
                   autoFocus
+                  onChange={handleInputChange}
+                  error={!!error}
+                  disabled={success}
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
@@ -130,6 +112,9 @@ export default function SignUp() {
                   label="Last Name"
                   name="lastName"
                   autoComplete="family-name"
+                  onChange={handleInputChange}
+                  error={!!error}
+                  disabled={success}
                 />
               </Grid>
               <Grid item xs={12}>
@@ -140,6 +125,9 @@ export default function SignUp() {
                   label="Email Address"
                   name="email"
                   autoComplete="email"
+                  onChange={handleInputChange}
+                  error={!!error}
+                  disabled={success}
                 />
               </Grid>
               <Grid item xs={12}>
@@ -151,27 +139,45 @@ export default function SignUp() {
                   type="password"
                   id="password"
                   autoComplete="new-password"
+                  onChange={handleInputChange}
+                  error={!!error}
+                  helperText="Password must be at least 6 characters"
+                  disabled={success}
                 />
               </Grid>
+              {error && (
+                <Grid item xs={12}>
+                  <Typography color="error" variant="body2">
+                    {error}
+                  </Typography>
+                </Grid>
+              )}
+              {success && (
+                <Grid item xs={12}>
+                  <Alert severity="success">
+                    Registration successful! Redirecting to login...
+                  </Alert>
+                </Grid>
+              )}
             </Grid>
             <Button
               type="submit"
               fullWidth
               variant="contained"
               sx={{ mt: 3, mb: 2 }}
+              disabled={loading || success}
             >
-              Sign Up
+              {loading ? 'Signing up...' : 'Sign Up'}
             </Button>
             <Grid container justifyContent="flex-end">
               <Grid item>
-                <Link href="/index.html" variant="body2">
+                <Link to="/signin" style={{ textDecoration: 'underline', color: 'rgba(0, 0, 0, 0.6)' }}>
                   Already have an account? Sign in
                 </Link>
               </Grid>
             </Grid>
           </Box>
         </Box>
-        {/*<Copyright sx={{ mt: 5 }} />*/}
       </Container>
     </ThemeProvider>
   );

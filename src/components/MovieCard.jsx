@@ -6,107 +6,34 @@ import Card from '@mui/material/Card';
 import CardActionArea from '@mui/material/CardActionArea';
 import CardContent from '@mui/material/CardContent';
 import CardMedia from '@mui/material/CardMedia';
-import { ButtonGroup } from '@mui/material';
-import { ToggleButton } from '@mui/material';
 
-function MovieCard(props) {
-  const { post } = props;
-
-  const radios = [
-    { name: 'Active', value: '1' },
-    { name: 'Radio', value: '2' },
-    { name: 'Radio', value: '3' },
-  ];
-
-  const checked = false;
-  const radioValue = 1;
+function MovieCard({ movie }) {
+  const defaultImage = 'https://www.themoviedb.org/assets/2/v4/glyphicons/basic/glyphicons-basic-38-picture-grey-c2ebdbb057f2a7614185931650f8cee23fa137b93812ccb132b9df511df1cfac.svg';
 
   return (
     <Grid item xs={12} md={6}>
-      <CardActionArea component="a" href="#">
-        <Card sx={{ display: 'flex' }}>
-          <CardContent sx={{ flex: 1 }}>
-            <Typography component="h2" variant="h5">
-              {post.title}
-            </Typography>
-            <Typography variant="subtitle1" color="text.secondary">
-              release date: {post.date}
-            </Typography>
-            <Typography variant="subtitle1" paragraph>
-              {post.description}
-            </Typography>
-            <Typography variant="subtitle1" color="primary">
-              Continue reading...
-            </Typography>
-          </CardContent>
-          <CardMedia
-            component="img"
-            sx={{ width: 160, display: { xs: 'none', sm: 'block' } }}
-            image={post.image}
-            alt={post.imageLabel}
-          />
-          {/* <>
-            <ButtonGroup className="mb-2">
-              <ToggleButton
-                id="toggle-check"
-                type="checkbox"
-                variant="secondary"
-                checked={checked}
-                value="1"
-                onChange={(e) => setChecked(e.currentTarget.checked)}
-              >
-                Checked
-              </ToggleButton>
-            </ButtonGroup>
-            <br />
-            <ButtonGroup className="mb-2">
-              {radios.map((radio, idx) => (
-                <ToggleButton
-                  key={idx}
-                  id={`radio-${idx}`}
-                  type="radio"
-                  variant="secondary"
-                  name="radio"
-                  value={radio.value}
-                  checked={radioValue === radio.value}
-                  onChange={(e) => setRadioValue(e.currentTarget.value)}
-                >
-                  {radio.name}
-                </ToggleButton>
-              ))}
-            </ButtonGroup>
-            <br />
-            <ToggleButton
-              className="mb-2"
-              id="toggle-check"
-              type="checkbox"
-              variant="outline-primary"
-              checked={checked}
-              value="1"
-              onChange={(e) => setChecked(e.currentTarget.checked)}
-            >
-              Checked
-            </ToggleButton>
-            <br />
-            <ButtonGroup>
-              {radios.map((radio, idx) => (
-                <ToggleButton
-                  key={idx}
-                  id={`radio-${idx}`}
-                  type="radio"
-                  variant={idx % 2 ? 'outline-success' : 'outline-danger'}
-                  name="radio"
-                  value={radio.value}
-                  checked={radioValue === radio.value}
-                  onChange={(e) => setRadioValue(e.currentTarget.value)}
-                >
-                  {radio.name}
-                </ToggleButton>
-              ))}
-            </ButtonGroup>
-          </> */}
-        </Card>
-      </CardActionArea>
+      <Card sx={{ display: 'flex', height: '100%' }}>
+        <CardContent sx={{ flex: 1 }}>
+          <Typography component="h2" variant="h5" gutterBottom>
+            {movie.title}
+          </Typography>
+          <Typography variant="subtitle1" color="text.secondary" gutterBottom>
+            Release date: {new Date(movie.release_date).toLocaleDateString()}
+          </Typography>
+          <Typography variant="body2" paragraph>
+            {movie.overview}
+          </Typography>
+          <Typography variant="subtitle2" color="text.secondary">
+            Rating: {movie.vote_average}/10
+          </Typography>
+        </CardContent>
+        <CardMedia
+          component="img"
+          sx={{ width: 160, display: { xs: 'none', sm: 'block' } }}
+          image={movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : defaultImage}
+          alt={`${movie.title} poster`}
+        />
+      </Card>
     </Grid>
   );
 }
@@ -114,8 +41,10 @@ function MovieCard(props) {
 MovieCard.propTypes = {
   movie: PropTypes.shape({
     title: PropTypes.string.isRequired,
-    description: PropTypes.string.isRequired,
-    date: PropTypes.string.isRequired,
+    overview: PropTypes.string,
+    release_date: PropTypes.string,
+    poster_path: PropTypes.string,
+    vote_average: PropTypes.number,
   }).isRequired,
 };
 

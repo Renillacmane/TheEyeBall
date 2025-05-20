@@ -5,73 +5,90 @@ import CssBaseline from '@mui/material/CssBaseline';
 import TextField from '@mui/material/TextField';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
-import Link from '@mui/material/Link';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
+import Alert from '@mui/material/Alert';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import axios from 'axios';
+import apiClient from '../../services/api';
 
-// function Copyright(props) {
-//   return (
-//     <Typography variant="body2" color="text.secondary" align="center" {...props}>
-//       {'Copyright © '}
-//       <Link color="inherit" href="https://mui.com/">
-//         Your Website
-//       </Link>{' '}
-//       {new Date().getFullYear()}
-//       {'.'}
-//     </Typography>
-//   );
-// }
-
-// TODO remove, this demo shouldn't need to reset the theme.
 const defaultTheme = createTheme();
 
 export default function SignIn() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { login } = useAuth();
+  const [error, setError] = React.useState('');
+  const [loading, setLoading] = React.useState(false);
+  const [success, setSuccess] = React.useState(false);
 
-    let postOptions = {
-    method: "POST",
-    //url: `${import.meta.env.VITE_BE_ADDRESS}/signup`,
-    headers: {
-      'Content-Type': 'application/json',
-      'Access-Control-Allow-Origin': '*',
-    },
-  }
+  // Clear location state after reading the message
+  React.useEffect(() => {
+    if (location.state?.message) {
+      navigate('.', { replace: true, state: {} });
+    }
+  }, [location.state, navigate]);
 
   const postSignIn = async (details) => {
-    // postOptions.data = details;
-    try{
-      let res = await axios.post(`${import.meta.env.VITE_BE_ADDRESS}/login`, details, postOptions);
-
-      // Acho que devia ter aqui tratamento com uma mensagem de sucesso
-      console.log(res);
-
-      return res;
+    try {
+      const res = await apiClient.post('/login', details);
+      if (res.data && res.data.data) {
+        login(res.data.data, { email: details.email });
+        return { success: true };
+      }
+      return { success: false, error: 'Invalid response from server' };
+    } catch (err) {
+      console.error('Login error:', err);
+      return { 
+        success: false, 
+        error: err.response?.data?.message || 'Login failed. Please try again.' 
+      };
     }
-    catch(err){
-      console.log(err);
-    }
-  }
+  };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
+    setError('');
+    setSuccess(false);
+    
     const data = new FormData(event.currentTarget);
     const details = {
       email: data.get('email'),
       password: data.get('password'),
     };
 
-    console.log(details);
+    if (!details.email || !details.password) {
+      setError('Please fill in all fields');
+      return;
+    }
     
-    let res = postSignIn(details);
-    //localStorage.setItem('user', JSON.stringify({ email, token: res.data1 }))
-    //props.setLoggedIn(true)
-    //props.setEmail(email)
-    window.alert('Login successfull. Click to continue')
+    setLoading(true);
+    try {
+      const result = await postSignIn(details);
+      if (result.success) {
+        setSuccess(true);
+        navigate('/movies', { replace: true });
+      } else {
+        setError(result.error || 'Login failed. Please try again.');
+      }
+    } catch (err) {
+      setError('An unexpected error occurred. Please try again later.');
+      console.error('Login error:', err);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const handleInputChange = () => {
+    setError('');
+    setSuccess(false);
+  };
+
+  const isFormDisabled = loading || success;
 
   return (
     <ThemeProvider theme={defaultTheme}>
@@ -92,6 +109,11 @@ export default function SignIn() {
             Sign in
           </Typography>
           <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
+            {location.state?.message && (
+              <Alert severity="success" sx={{ mt: 1, mb: 2 }}>
+                {location.state.message}
+              </Alert>
+            )}
             <TextField
               margin="normal"
               required
@@ -101,6 +123,9 @@ export default function SignIn() {
               name="email"
               autoComplete="email"
               autoFocus
+              onChange={handleInputChange}
+              error={!!error}
+              disabled={isFormDisabled}
             />
             <TextField
               margin="normal"
@@ -111,9 +136,28 @@ export default function SignIn() {
               type="password"
               id="password"
               autoComplete="current-password"
+              onChange={handleInputChange}
+              error={!!error}
+              disabled={isFormDisabled}
             />
+            {error && (
+              <Typography color="error" variant="body2" sx={{ mt: 1 }}>
+                {error}
+              </Typography>
+            )}
+            {success && (
+              <Alert severity="success" sx={{ mt: 1 }}>
+                Login successful! Redirecting...
+              </Alert>
+            )}
             <FormControlLabel
-              control={<Checkbox value="remember" color="primary" />}
+              control={
+                <Checkbox 
+                  value="remember" 
+                  color="primary"
+                  disabled={isFormDisabled}
+                />
+              }
               label="Remember me"
             />
             <Button
@@ -121,8 +165,9 @@ export default function SignIn() {
               fullWidth
               variant="contained"
               sx={{ mt: 3, mb: 2 }}
+              disabled={isFormDisabled}
             >
-              Sign In
+              {loading ? 'Signing in...' : 'Sign In'}
             </Button>
             <Grid container>
               <Grid item xs>
@@ -131,14 +176,13 @@ export default function SignIn() {
                 </Link>*/}
               </Grid>
               <Grid item>
-                <Link href="/" variant="body2">
-                  {"Don't have an account? Sign Up"}
+                <Link to="/signup" style={{ textDecoration: 'underline', color: 'rgba(0, 0, 0, 0.6)' }}>
+                  Don't have an account? Sign Up
                 </Link>
               </Grid>
             </Grid>
           </Box>
         </Box>
-        {/*<Copyright sx={{ mt: 5 }} />*/}
       </Container>
     </ThemeProvider>
   );
