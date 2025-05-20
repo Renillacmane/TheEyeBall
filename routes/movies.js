@@ -1,44 +1,47 @@
-var express = require('express');
-var router = express.Router();
-var moviesService = require("../services/moviesService")
+const express = require('express');
+const router = express.Router();
+const moviesService = require("../services/moviesService");
+const { ValidationError } = require('../errors/auth-errors');
 
 /* GET movies listing. */
 router.get('/', async function(req, res, next) {
-    try{
-        //var movies = await moviesService.getAllPromise();
-        var movies = await moviesService.getAllProxy();
-        
-        console.log(movies);
-        res.send(movies);
-    }
-    catch(err){
-        next("Internal Error");
+    try {
+        const movies = await moviesService.getAllProxy();
+        if (!movies || !Array.isArray(movies)) {
+            throw new ValidationError('Invalid response from movie service');
+        }
+        res.json(movies);
+    } catch(err) {
+        next(err);
     }
 });
 
-/* GET movies listing with reactions - TODO */
+/* GET movies with reactions */
 router.get('/reacted', async function(req, res, next) {
-    try{
-        //var movies = await moviesService.getAllPromise();
-        //var movies = await moviesService.getAllProxy();
-        
-        console.log(movies);
-
-        res.send(movies);
-    }
-    catch(err){
-        next("Internal Error");
+    try {
+        const movies = await moviesService.getAllWithReactions();
+        if (!movies || !Array.isArray(movies)) {
+            throw new ValidationError('Invalid response from movie service');
+        }
+        res.json(movies);
+    } catch(err) {
+        next(err);
     }
 });
 
-/* POST movies reactions */
-router.post('/', async function(req, res, next) {
-    try{
-        var result = await moviesService.createReaction(req.body);
-        res.send("Reaction submitted successfully");
-    }
-    catch(err){
-        next("Internal Error");
+/* POST movie reaction */
+router.post('/reaction', async function(req, res, next) {
+    try {
+        const { movieId, reaction } = req.body;
+        
+        if (!movieId || !reaction) {
+            throw new ValidationError('Movie ID and reaction are required');
+        }
+        
+        await moviesService.createReaction(req.body);
+        res.json({ message: "Reaction submitted successfully" });
+    } catch(err) {
+        next(err);
     }
 });
 

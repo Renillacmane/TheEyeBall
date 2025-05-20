@@ -26,22 +26,30 @@ const UserSchema = new Schema({
 UserSchema.pre(
   'save',
   async function(next) {
-    const user = this;
-    const hash = await bcrypt.hash(this.password, 10);
-
-    this.password = hash;
+    if (this.isModified('password')) {
+      try {
+        const hash = await bcrypt.hash(this.password, 10);
+        this.password = hash;
+      } catch (err) {
+        return next(err);
+      }
+    }
     next();
   }
 );
 
 // password comparison
 UserSchema.methods.isValidPassword = async function(password) {
-  let user = this;
-
-  console.log(user);
-
-  let isValid = await bcrypt.compare(password, user.password);
-  return isValid;
+  if (!password || !this.password) {
+    return false;
+  }
+  
+  try {
+    return await bcrypt.compare(password, this.password);
+  } catch (err) {
+    console.error('Error validating password');
+    return false;
+  }
 }
 
 const UserModel = mongoose.model('user', UserSchema);
