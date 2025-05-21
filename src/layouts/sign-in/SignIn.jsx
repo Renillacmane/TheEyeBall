@@ -1,5 +1,4 @@
 import * as React from 'react';
-import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
 import TextField from '@mui/material/TextField';
@@ -9,7 +8,6 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
-import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import Alert from '@mui/material/Alert';
 import Container from '@mui/material/Container';
@@ -18,9 +16,19 @@ import IconButton from '@mui/material/IconButton';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import InputAdornment from '@mui/material/InputAdornment';
+import banner from '../../assets/banner.png';
 import apiClient from '../../services/api';
 
-const defaultTheme = createTheme();
+const defaultTheme = createTheme({
+  palette: {
+    primary: {
+      main: '#c45d3c',
+    },
+    secondary: {
+      main: '#e17055',
+    },
+  },
+});
 
 export default function SignIn() {
   const navigate = useNavigate();
@@ -46,9 +54,9 @@ export default function SignIn() {
 
   const postSignIn = async (details) => {
     try {
-      const res = await apiClient.post('/login', details);
-      if (res.data && res.data.data) {
-        login(res.data.data, { email: details.email });
+        const res = await apiClient.post('/login', details);
+        if (res.data && res.data.data && res.data.user) {
+          login(res.data.data, res.data.user);
         return { success: true };
       }
       return { success: false, error: 'Invalid response from server' };
@@ -103,7 +111,7 @@ export default function SignIn() {
 
   return (
     <ThemeProvider theme={defaultTheme}>
-      <Container component="main" maxWidth="xs">
+      <Container component="main" maxWidth="xs" id="signin-container">
         <CssBaseline />
         <Box
           sx={{
@@ -112,14 +120,61 @@ export default function SignIn() {
             flexDirection: 'column',
             alignItems: 'center',
           }}
+          id="signin-content"
         >
-          <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
-            <LockOutlinedIcon />
-          </Avatar>
-          <Typography component="h1" variant="h5">
-            Sign in
-          </Typography>
-          <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
+          <Box
+            component="img"
+            src={banner}
+            alt="TheEyeBall"
+            sx={{
+              width: '100%',
+              maxWidth: 400,
+              height: 'auto',
+              mb: 3
+            }}
+            id="signin-banner"
+          />
+          <Box 
+            component="form" 
+            onSubmit={handleSubmit} 
+            noValidate 
+            sx={{ 
+              mt: 0,
+              width: '100%',
+              '& .MuiTextField-root': { mb: 2 },
+              '& .MuiButton-root': { mt: 3, mb: 2, py: 1.5 },
+              bgcolor: 'background.paper',
+              borderRadius: 2,
+              p: 3,
+              boxShadow: 1
+            }}
+            id="signin-form"
+          >
+            <Typography 
+              component="h1" 
+              variant="h4" 
+              sx={{ 
+                fontWeight: 600,
+                background: 'linear-gradient(45deg, #c45d3c 30%, #e17055 90%)',
+                backgroundClip: 'text',
+                textFillColor: 'transparent',
+                mb: 2
+              }}
+              id="signin-title"
+            >
+              Welcome Back
+            </Typography>
+            <Typography 
+              variant="body1" 
+              sx={{ 
+                mb: 3,
+                color: 'text.secondary'
+              }}
+              id="signin-subtitle"
+            >
+              Sign in to continue your movie journey
+            </Typography>
+            
             {location.state?.message && (
               <Alert severity="success" sx={{ mt: 1, mb: 2 }}>
                 {location.state.message}
@@ -129,7 +184,7 @@ export default function SignIn() {
               margin="normal"
               required
               fullWidth
-              id="email"
+              id="signin-email"
               label="Email Address"
               name="email"
               autoComplete="email"
@@ -145,7 +200,7 @@ export default function SignIn() {
               name="password"
               label="Password"
               type={showPassword ? 'text' : 'password'}
-              id="password"
+              id="signin-password"
               autoComplete="current-password"
               onChange={handleInputChange}
               error={!!error}
@@ -167,12 +222,12 @@ export default function SignIn() {
               }}
             />
             {error && (
-              <Typography color="error" variant="body2" sx={{ mt: 1 }}>
+              <Typography color="error" variant="body2" sx={{ mt: 1 }} id="signin-error">
                 {error}
               </Typography>
             )}
             {success && (
-              <Alert severity="success" sx={{ mt: 1 }}>
+              <Alert severity="success" sx={{ mt: 1 }} id="signin-success">
                 Login successful! Redirecting...
               </Alert>
             )}
@@ -182,27 +237,44 @@ export default function SignIn() {
                   value="remember" 
                   color="primary"
                   disabled={isFormDisabled}
+                  id="signin-remember"
                 />
               }
               label="Remember me"
+              sx={{ mt: 1 }}
             />
             <Button
               type="submit"
               fullWidth
               variant="contained"
-              sx={{ mt: 3, mb: 2 }}
+              sx={{ 
+                mt: 3, 
+                mb: 2,
+                background: 'linear-gradient(45deg, #c45d3c 30%, #e17055 90%)',
+                boxShadow: '0 3px 5px 2px rgba(196, 93, 60, .3)',
+                ':hover': {
+                  background: 'linear-gradient(45deg, #b54d2c 30%, #c45d3c 90%)',
+                }
+              }}
               disabled={isFormDisabled}
+              id="signin-submit"
             >
               {loading ? 'Signing in...' : 'Sign In'}
             </Button>
-            <Grid container>
-              <Grid item xs>
-                {/*<Link href="#" variant="body2">
-                  Forgot password?
-                </Link>*/}
-              </Grid>
+            <Grid container justifyContent="center">
               <Grid item>
-                <Link to="/signup" style={{ textDecoration: 'underline', color: 'rgba(0, 0, 0, 0.6)' }}>
+                <Link 
+                  to="/signup" 
+                  style={{ 
+                    textDecoration: 'none', 
+                    color: '#c45d3c',
+                    fontWeight: 500,
+                    ':hover': {
+                      textDecoration: 'underline'
+                    }
+                  }}
+                  id="signin-signup-link"
+                >
                   Don't have an account? Sign Up
                 </Link>
               </Grid>

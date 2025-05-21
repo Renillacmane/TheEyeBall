@@ -1,5 +1,4 @@
 import * as React from 'react';
-import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
 import TextField from '@mui/material/TextField';
@@ -8,8 +7,6 @@ import Checkbox from '@mui/material/Checkbox';
 import { Link } from 'react-router-dom';
 import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
-import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
-import VideoSettingsIcon from '@mui/icons-material/VideoSettings';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import Alert from '@mui/material/Alert';
@@ -19,9 +16,19 @@ import IconButton from '@mui/material/IconButton';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import InputAdornment from '@mui/material/InputAdornment';
+import banner from '../../assets/banner.png';
 import apiClient from '../../services/api';
 
-const defaultTheme = createTheme();
+const defaultTheme = createTheme({
+  palette: {
+    primary: {
+      main: '#c45d3c',
+    },
+    secondary: {
+      main: '#e17055',
+    },
+  },
+});
 
 export default function SignUp() {
   const navigate = useNavigate();
@@ -83,7 +90,7 @@ export default function SignUp() {
 
   return (
     <ThemeProvider theme={defaultTheme}>
-      <Container component="main" maxWidth="xs">
+      <Container component="main" maxWidth="xs" id="signup-container">
         <CssBaseline />
         <Box
           sx={{
@@ -92,14 +99,60 @@ export default function SignUp() {
             flexDirection: 'column',
             alignItems: 'center',
           }}
+          id="signup-content"
         >
-          <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
-            <VideoSettingsIcon />
-          </Avatar>
-          <Typography component="h1" variant="h5">
-            Sign up
-          </Typography>
-          <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 3 }}>
+          <Box
+            component="img"
+            src={banner}
+            alt="TheEyeBall"
+            sx={{
+              width: '100%',
+              maxWidth: 400,
+              height: 'auto',
+              mb: 3
+            }}
+            id="signup-banner"
+          />
+          <Box 
+            component="form" 
+            noValidate 
+            onSubmit={handleSubmit} 
+            sx={{ 
+              mt: 0,
+              width: '100%',
+              '& .MuiTextField-root': { mb: 2 },
+              '& .MuiButton-root': { mt: 3, mb: 2, py: 1.5 },
+              bgcolor: 'background.paper',
+              borderRadius: 2,
+              p: 3,
+              boxShadow: 1
+            }}
+            id="signup-form"
+          >
+            <Typography 
+              component="h1" 
+              variant="h4" 
+              sx={{ 
+                fontWeight: 600,
+                background: 'linear-gradient(45deg, #c45d3c 30%, #e17055 90%)',
+                backgroundClip: 'text',
+                textFillColor: 'transparent',
+                mb: 2
+              }}
+              id="signup-title"
+            >
+              Join TheEyeBall
+            </Typography>
+            <Typography 
+              variant="body1" 
+              sx={{ 
+                mb: 3,
+                color: 'text.secondary'
+              }}
+              id="signup-subtitle"
+            >
+              Create an account to start exploring movies
+            </Typography>
             <Grid container spacing={2}>
               <Grid item xs={12} sm={6}>
                 <TextField
@@ -107,7 +160,7 @@ export default function SignUp() {
                   name="firstName"
                   required
                   fullWidth
-                  id="firstName"
+                  id="signup-firstname"
                   label="First Name"
                   autoFocus
                   onChange={handleInputChange}
@@ -119,7 +172,7 @@ export default function SignUp() {
                 <TextField
                   required
                   fullWidth
-                  id="lastName"
+                  id="signup-lastname"
                   label="Last Name"
                   name="lastName"
                   autoComplete="family-name"
@@ -132,7 +185,7 @@ export default function SignUp() {
                 <TextField
                   required
                   fullWidth
-                  id="email"
+                  id="signup-email"
                   label="Email Address"
                   name="email"
                   autoComplete="email"
@@ -148,7 +201,7 @@ export default function SignUp() {
                   name="password"
                   label="Password"
                   type={showPassword ? 'text' : 'password'}
-                  id="password"
+                  id="signup-password"
                   autoComplete="new-password"
                   onChange={handleInputChange}
                   error={!!error}
@@ -163,6 +216,7 @@ export default function SignUp() {
                           onMouseDown={handleMouseDownPassword}
                           disabled={success}
                           edge="end"
+                          id="signup-password-toggle"
                         >
                           {showPassword ? <VisibilityOff /> : <Visibility />}
                         </IconButton>
@@ -173,14 +227,14 @@ export default function SignUp() {
               </Grid>
               {error && (
                 <Grid item xs={12}>
-                  <Typography color="error" variant="body2">
+                  <Typography color="error" variant="body2" id="signup-error">
                     {error}
                   </Typography>
                 </Grid>
               )}
               {success && (
                 <Grid item xs={12}>
-                  <Alert severity="success">
+                  <Alert severity="success" id="signup-success">
                     Registration successful! Redirecting to login...
                   </Alert>
                 </Grid>
@@ -190,14 +244,34 @@ export default function SignUp() {
               type="submit"
               fullWidth
               variant="contained"
-              sx={{ mt: 3, mb: 2 }}
+              sx={{ 
+                mt: 3, 
+                mb: 2,
+                background: 'linear-gradient(45deg, #c45d3c 30%, #e17055 90%)',
+                boxShadow: '0 3px 5px 2px rgba(196, 93, 60, .3)',
+                ':hover': {
+                  background: 'linear-gradient(45deg, #b54d2c 30%, #c45d3c 90%)',
+                }
+              }}
               disabled={loading || success}
+              id="signup-submit"
             >
               {loading ? 'Signing up...' : 'Sign Up'}
             </Button>
-            <Grid container justifyContent="flex-end">
+            <Grid container justifyContent="center">
               <Grid item>
-                <Link to="/signin" style={{ textDecoration: 'underline', color: 'rgba(0, 0, 0, 0.6)' }}>
+                <Link 
+                  to="/signin" 
+                  style={{ 
+                    textDecoration: 'none', 
+                    color: '#c45d3c',
+                    fontWeight: 500,
+                    ':hover': {
+                      textDecoration: 'underline'
+                    }
+                  }}
+                  id="signup-signin-link"
+                >
                   Already have an account? Sign in
                 </Link>
               </Grid>
