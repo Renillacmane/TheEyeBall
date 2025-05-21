@@ -14,6 +14,10 @@ import Typography from '@mui/material/Typography';
 import Alert from '@mui/material/Alert';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
+import IconButton from '@mui/material/IconButton';
+import Visibility from '@mui/icons-material/Visibility';
+import VisibilityOff from '@mui/icons-material/VisibilityOff';
+import InputAdornment from '@mui/material/InputAdornment';
 import apiClient from '../../services/api';
 
 const defaultTheme = createTheme();
@@ -25,6 +29,13 @@ export default function SignIn() {
   const [error, setError] = React.useState('');
   const [loading, setLoading] = React.useState(false);
   const [success, setSuccess] = React.useState(false);
+  const [showPassword, setShowPassword] = React.useState(false);
+
+  const handleClickShowPassword = () => setShowPassword((show) => !show);
+  
+  const handleMouseDownPassword = (event) => {
+    event.preventDefault();
+  };
 
   // Clear location state after reading the message
   React.useEffect(() => {
@@ -133,12 +144,27 @@ export default function SignIn() {
               fullWidth
               name="password"
               label="Password"
-              type="password"
+              type={showPassword ? 'text' : 'password'}
               id="password"
               autoComplete="current-password"
               onChange={handleInputChange}
               error={!!error}
               disabled={isFormDisabled}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label="toggle password visibility"
+                      onClick={handleClickShowPassword}
+                      onMouseDown={handleMouseDownPassword}
+                      disabled={isFormDisabled}
+                      edge="end"
+                    >
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
             />
             {error && (
               <Typography color="error" variant="body2" sx={{ mt: 1 }}>
