@@ -3,15 +3,17 @@ const router = express.Router();
 const moviesService = require("../services/moviesService");
 const { ValidationError } = require('../errors/auth-errors');
 
-/* GET movies listing. */
-router.get('/', async function(req, res, next) {
+/* GET upcoming movies */
+router.get('/upcoming', async function(req, res, next) {
     try {
-        const movies = await moviesService.getAllProxy();
-        if (!movies || !Array.isArray(movies)) {
-            throw new ValidationError('Invalid response from movie service');
+        const response = await moviesService.fetchUpcomingMovies();
+        // Check if response exists and has the expected format
+        if (!response) {
+            throw new ValidationError('No response from movie service');
         }
-        res.json(movies);
+        res.json(response);
     } catch(err) {
+        console.error('Error in /movies/upcoming:', err);
         next(err);
     }
 });
@@ -19,7 +21,7 @@ router.get('/', async function(req, res, next) {
 /* GET movies with reactions */
 router.get('/reacted', async function(req, res, next) {
     try {
-        const movies = await moviesService.getAllWithReactions();
+        const movies = await moviesService.fetchMoviesWithReactions();
         if (!movies || !Array.isArray(movies)) {
             throw new ValidationError('Invalid response from movie service');
         }

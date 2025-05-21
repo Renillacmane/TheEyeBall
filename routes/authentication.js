@@ -66,14 +66,22 @@ router.post( '/login', (req, res, next) => {
         });
       });
 
-      const body = { _id: user._id, email: user.email };
+      const body = { 
+        _id: user._id, 
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName
+      };
       try {
         const token = await promisify(jwt.sign)(
           { user: body },
           JWT_SECRET,
           { expiresIn: JWT_EXPIRES_IN, issuer: APP_NAME }
         );
-        return res.status(200).json({ data: token });
+        return res.status(200).json({ 
+          data: token,
+          user: body
+        });
       } catch (err) {
         throw new Error('Failed to generate authentication token');
       }

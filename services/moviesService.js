@@ -12,7 +12,7 @@ const REACTIONS = {
 }
 
 module.exports = {
-    getAllPromise : async function (){
+    fetchMoviesWithReactions : async function (){
         // request movies from API
         var apiMovies;
         try {
@@ -23,36 +23,25 @@ module.exports = {
             console.log("An error ocurred");
         }
 
-        // setting a timeout
-        //util.wait(10000)
-
         // convert to inner movie model
         var results = [];
         var externalIds = [];
 
         for(var movie of apiMovies){
-            //console.log(movie);
-
             externalIds.push(movie.id);
             let convertedMovie = await converter.movieConverter(movie);
             results.push(convertedMovie);
-            //console.log(results.length);
         }
 
         console.log(externalIds);
 
-        // get existing movies from DB with externalIds
-        // match with results and update thumbsUp and thumbsDown 
         return results;
     },
 
-    // Rest client using axios
-    getAllProxy : async function (){
-        // request movies from API
-        var apiMovies;
+    // Fetch upcoming movies from TMDB
+    fetchUpcomingMovies : async function (){
         try {
             response = await tmdbServie.getUpcomingAxios();
-            
             util.printConsole(process.env.DEBUG_PRINT, response);
         }
         catch(err){
@@ -61,21 +50,12 @@ module.exports = {
         return response;
     },
 
-     // Process reaction
+    // Process reaction
     createReaction : async function (newReaction){
-        // request movies from API
-        var apiMovies;
         try {
-            // lookup reactions for this movie and user
-            // if found, delete
-            // else 
-            // insert new line in Movie
-            // insert new line in UserReaction
-            // create enum for 0 - none, 1 - thumbsDown, 2 - thumbsUp
-
             var movie;
             var movieCounter = await Movie.countDocuments({ id_external : newReaction.id_external }).exec();
-             console.log("Movies: " + movieCounter);
+            console.log("Movies: " + movieCounter);
             if (movieCounter == 0){
                 movie = await Movie.create({
                     id_external : newReaction.id_external,
@@ -126,7 +106,6 @@ module.exports = {
         }
         catch(err){
             console.log(err);
-
             throw err;
         }
     }

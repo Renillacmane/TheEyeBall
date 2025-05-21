@@ -3,20 +3,18 @@ var util = require("../utils/util");
 var axios = require('axios');
 
 var options = {
-    //method: 'GET',
-    //path: '/movies',
     hostname: process.env.HOSTNAME,
     port: null,
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${process.env.API_KEY}`
     },
-  };
+};
 
 module.exports = {
   getUpcoming : function(){
       options.method = "GET";
-      options.path = "/" + process.env.API_VERSION + process.env.PATH_UPCOMING_MOVIE;
+      options.path = `/api/${process.env.API_VERSION}${process.env.PATH_UPCOMING_MOVIE}`;
       let data = '';
       
       util.printConsole(process.env.DEBUG_PRINT, "Calling " + options.path + " with promise");
@@ -45,53 +43,43 @@ module.exports = {
   },
 
   getUpcomingAxios : async function(){
-    options.hostname = null;
-    options.method = 'GET';
-    options.url = process.env.HOSTNAME + "/" + process.env.API_VERSION + process.env.PATH_UPCOMING_MOVIE,
-
-    util.printConsole(process.env.DEBUG_PRINT, "Calling " + options.url + " with axios");
-
     try {
-        let res = await axios(options);
-        if (res.status === 200){
-            console.log("response coming");
-        }
+        const url = `${process.env.HOSTNAME}/${process.env.API_VERSION}${process.env.PATH_UPCOMING_MOVIE}`;
+        
+        util.printConsole(process.env.DEBUG_PRINT, "Calling " + url + " with axios");
+        console.log("Requesting URL:", url);
 
-        return res.data.results;
+        const res = await axios.get(url, {
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${process.env.API_KEY}`
+            }
+        });
+
+        console.log("TMDB Response:", {
+            status: res.status,
+            hasData: !!res.data,
+            dataType: typeof res.data,
+            results: res.data?.results ? 'present' : 'missing'
+        });
+
+        if (res.status === 200 && res.data) {
+            // TMDB API returns { results: [...movies] }
+            const movies = res.data.results || [];
+            console.log(`Retrieved ${movies.length} movies from TMDB`);
+            return movies;
+        }
+        
+        throw new Error("Invalid response format from provider");
     }
     catch(err) {
-        console.log("Provider error with message: " + err.response.data.status_message);
-        throw new Error("Provider service error");
+        console.error("TMDB API Error:", {
+            message: err.message,
+            response: err.response?.data,
+            url: err.config?.url,
+            status: err.response?.status
+        });
+        throw err;
     }
   }
-        
-    /* // Example with callback
-    var request = http.request(options, (response) => {
-        console.log("Setting up response");
-
-        // Set the encoding, so we don't get log to the console a bunch of gibberish binary data
-        response.setEncoding('utf8');
-
-        // As data starts streaming in, add each chunk to "data"
-        response.on('data', (chunk) => {
-            data += chunk;
-        });
-
-        // The whole response has been received. Print out the result.
-        response.on('end', () => {
-            console.log(data);
-            return data;
-        });
-
-        // Log errors if any occur
-        request.on('error', (error) => {
-        console.log("An error has ocurred: ");
-        console.error(error);
-        return [];
-        });
-
-        // End the request
-        request.end();
-    });
-    */
 }
