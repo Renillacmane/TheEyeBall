@@ -50,6 +50,30 @@ module.exports = {
         return response;
     },
 
+    // Fetch now playing movies from TMDB
+    fetchNowPlayingMovies : async function (){
+        try {
+            response = await tmdbServie.getNowPlayingAxios();
+            util.printConsole(process.env.DEBUG_PRINT, response);
+        }
+        catch(err){
+            throw err;
+        }
+        return response;
+    },
+
+    // Fetch top rated movies from TMDB
+    fetchTopRatedMovies : async function (){
+        try {
+            response = await tmdbServie.getTopRatedAxios();
+            util.printConsole(process.env.DEBUG_PRINT, response);
+        }
+        catch(err){
+            throw err;
+        }
+        return response;
+    },
+
     // Process reaction
     createReaction : async function (newReaction){
         try {
