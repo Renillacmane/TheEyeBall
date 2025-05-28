@@ -2,6 +2,7 @@ import * as React from 'react';
 import CssBaseline from '@mui/material/CssBaseline';
 import Grid from '@mui/material/Grid';
 import Container from '@mui/material/Container';
+import Typography from '@mui/material/Typography';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import CircularProgress from '@mui/material/CircularProgress';
 import Alert from '@mui/material/Alert';
@@ -79,14 +80,21 @@ export default function UpcomingMovies() {
         }}
       >
         <Container maxWidth="lg">
-          <Header 
-            title="Upcoming Movies" 
-            sections={[
-              { title: 'Now Playing', url: '/movies' },
-              { title: 'Coming Soon', url: '/movies/upcoming' },
-              { title: 'Top Rated', url: '/movies/top-rated' },
-            ]} 
-          />
+          <Header />
+          <Typography
+            component="h1"
+            variant="h4"
+            align="center"
+            sx={{ 
+              color: '#c45d3c',
+              fontWeight: 600,
+              mb: 4,
+              mt: 2
+            }}
+            id="page-title"
+          >
+            Upcoming Movies
+          </Typography>
           <main>
             {loading ? (
               <Box 

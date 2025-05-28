@@ -1,8 +1,8 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import SignIn from './layouts/sign-in/SignIn';
 import SignUp from './layouts/sign-up/SignUp';
-import UpcomingMovies from './layouts/upcomingMovies/UpcomingMovies';
 import Settings from './layouts/settings/Settings';
+import MoviesPage from './pages/movies/MoviesPage';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import './App.css';
 
@@ -20,14 +20,17 @@ function AppRoutes() {
       } />
 
       {/* Protected Routes */}
-      <Route path="/movies" element={
-        isAuthenticated ? <UpcomingMovies /> : <Navigate to="/signin" replace />
+      <Route path="/movies/eyeballed" element={
+        isAuthenticated ? <MoviesPage title="EyeBalled For You" endpoint="/movies/eyeballed" /> : <Navigate to="/signin" replace />
+      } />
+      <Route path="/movies/playing" element={
+        isAuthenticated ? <MoviesPage title="Now Playing" endpoint="/movies/now-playing" /> : <Navigate to="/signin" replace />
       } />
       <Route path="/movies/upcoming" element={
-        isAuthenticated ? <UpcomingMovies /> : <Navigate to="/signin" replace />
+        isAuthenticated ? <MoviesPage title="Upcoming Movies" endpoint="/movies/upcoming" /> : <Navigate to="/signin" replace />
       } />
       <Route path="/movies/top-rated" element={
-        isAuthenticated ? <UpcomingMovies /> : <Navigate to="/signin" replace />
+        isAuthenticated ? <MoviesPage title="Top Rated Movies" endpoint="/movies/top-rated" /> : <Navigate to="/signin" replace />
       } />
 
       {/* Settings Route */}

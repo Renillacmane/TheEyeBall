@@ -13,13 +13,33 @@ import MenuItem from '@mui/material/MenuItem';
 import SettingsIcon from '@mui/icons-material/Settings';
 import LogoutIcon from '@mui/icons-material/Logout';
 import ListItemIcon from '@mui/material/ListItemIcon';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { styled } from '@mui/material/styles';
 import banner from '../assets/banner.png';
 
-function Header(props) {
-  const { sections, title } = props;
+const SearchInput = styled('input')(({ theme }) => ({
+  width: '100%',
+  padding: '8px 12px',
+  border: '1px solid rgba(196, 93, 60, 0.3)',
+  borderRadius: '4px',
+  fontSize: '0.9rem',
+  color: '#c45d3c',
+  outline: 'none',
+  backgroundColor: '#fff',
+  transition: 'border-color 0.2s ease',
+  '&:focus': {
+    borderColor: '#c45d3c',
+  },
+  '&::placeholder': {
+    color: 'rgba(196, 93, 60, 0.6)',
+  }
+}));
+
+function Header() {
   const navigate = useNavigate();
+  const location = useLocation();
+  
   const { logout, user } = useAuth();
   const [anchorEl, setAnchorEl] = React.useState(null);
   const open = Boolean(anchorEl);
@@ -71,34 +91,100 @@ function Header(props) {
           }}
           id="header-logo"
         />
-        <Link
-          color="inherit"
-          noWrap
-          href="/movies/top-rated"
-          sx={{ 
-            color: '#e17055',
-            textDecoration: 'none',
-            '&:hover': {
-              color: '#c45d3c',
-              textDecoration: 'none'
-            }
-          }}
-        >
-          Top Choices
-        </Link>
-        <Typography
-          component="h2"
-          variant="h5"
-          align="center"
-          noWrap
+        <Box sx={{ display: 'flex', gap: 3 }} id="navigation-links">
+          <Link
+            id="nav-eyeballed-for-you"
+            color="inherit"
+            noWrap
+            onClick={() => navigate('/movies/eyeballed')}
+            sx={{ 
+              fontSize: '0.9rem',
+              color: location.pathname === '/movies/eyeballed' ? '#c45d3c' : '#e17055',
+              textDecoration: 'none',
+              cursor: 'pointer',
+              fontWeight: location.pathname === '/movies/eyeballed' ? 600 : 400,
+              '&:hover': {
+                color: '#c45d3c',
+                textDecoration: 'none'
+              }
+            }}
+          >
+            EyeBalled For You
+          </Link>
+          <Link
+            id="nav-upcoming"
+            color="inherit"
+            noWrap
+            onClick={() => navigate('/movies/upcoming')}
+            sx={{ 
+              fontSize: '0.9rem',
+              color: location.pathname === '/movies/upcoming' ? '#c45d3c' : '#e17055',
+              textDecoration: 'none',
+              cursor: 'pointer',
+              fontWeight: location.pathname === '/movies/upcoming' ? 600 : 400,
+              '&:hover': {
+                color: '#c45d3c',
+                textDecoration: 'none'
+              }
+            }}
+          >
+            Upcoming
+          </Link>
+          <Link
+            id="nav-now-playing"
+            color="inherit"
+            noWrap
+            onClick={() => navigate('/movies/playing')}
+            sx={{ 
+              fontSize: '0.9rem',
+              color: location.pathname === '/movies/playing' ? '#c45d3c' : '#e17055',
+              textDecoration: 'none',
+              cursor: 'pointer',
+              fontWeight: location.pathname === '/movies/playing' ? 600 : 400,
+              '&:hover': {
+                color: '#c45d3c',
+                textDecoration: 'none'
+              }
+            }}
+          >
+            Now Playing
+          </Link>
+          <Link
+            id="nav-top-rated"
+            color="inherit"
+            noWrap
+            onClick={() => navigate('/movies/top-rated')}
+            sx={{ 
+              fontSize: '0.9rem',
+              color: location.pathname === '/movies/top-rated' ? '#c45d3c' : '#e17055',
+              textDecoration: 'none',
+              cursor: 'pointer',
+              fontWeight: location.pathname === '/movies/top-rated' ? 600 : 400,
+              '&:hover': {
+                color: '#c45d3c',
+                textDecoration: 'none'
+              }
+            }}
+          >
+            Top Rated
+          </Link>
+        </Box>
+        <Box 
           sx={{ 
             flex: 1,
-            color: '#c45d3c',
-            fontWeight: 600
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1,
+            mx: 3
           }}
         >
-          {title}
-        </Typography>
+          <SearchInput
+            type="text"
+            id="movie-search"
+            placeholder="Search movies..."
+            aria-label="Search movies"
+          />
+        </Box>
         <IconButton
           id="search-button"
           aria-label="Search movies"
@@ -190,50 +276,9 @@ function Header(props) {
           </MenuItem>
         </Menu>
       </Toolbar>
-        <Toolbar
-          id="navigation-toolbar"
-          component="nav"
-          variant="dense"
-        sx={{ 
-          justifyContent: 'space-between', 
-          overflowX: 'auto',
-          borderBottom: 1,
-          borderColor: 'rgba(196, 93, 60, 0.1)',
-        }}
-      >
-        {sections.map((section) => (
-          <Link
-            color="inherit"
-            noWrap
-            key={section.title}
-            variant="body2"
-            href={section.url}
-            sx={{ 
-              p: 1, 
-              flexShrink: 0,
-              color: '#e17055',
-              '&:hover': {
-                color: '#c45d3c',
-                textDecoration: 'none'
-              }
-            }}
-          >
-            {section.title}
-          </Link>
-        ))}
-      </Toolbar>
     </React.Fragment>
   );
 }
 
-Header.propTypes = {
-  sections: PropTypes.arrayOf(
-    PropTypes.shape({
-      title: PropTypes.string.isRequired,
-      url: PropTypes.string.isRequired,
-    }),
-  ).isRequired,
-  title: PropTypes.string.isRequired,
-};
 
 export default Header;
