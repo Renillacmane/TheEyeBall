@@ -33,6 +33,16 @@ function AppRoutes() {
         isAuthenticated ? <MoviesPage title="Top Rated Movies" endpoint="/movies/top-rated" /> : <Navigate to="/signin" replace />
       } />
 
+      {/* Search Route */}
+      <Route path="/movies/search" element={
+        isAuthenticated ? (
+          <MoviesPage 
+            title="Search Results" 
+            endpoint="/movies/search"
+          />
+        ) : <Navigate to="/signin" replace />
+      } />
+
       {/* Settings Route */}
       <Route path="/settings" element={
         isAuthenticated ? <Settings /> : <Navigate to="/signin" replace />

@@ -42,6 +42,7 @@ function Header() {
   
   const { logout, user } = useAuth();
   const [anchorEl, setAnchorEl] = React.useState(null);
+  const [searchQuery, setSearchQuery] = React.useState('');
   const open = Boolean(anchorEl);
 
   const getUserDisplay = () => {
@@ -183,11 +184,23 @@ function Header() {
             id="movie-search"
             placeholder="Search movies..."
             aria-label="Search movies"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyPress={(e) => {
+              if (e.key === 'Enter' && searchQuery.trim()) {
+                navigate(`/movies/search?q=${encodeURIComponent(searchQuery.trim())}`);
+              }
+            }}
           />
         </Box>
         <IconButton
           id="search-button"
           aria-label="Search movies"
+          onClick={() => {
+            if (searchQuery.trim()) {
+              navigate(`/movies/search?q=${encodeURIComponent(searchQuery.trim())}`);
+            }
+          }}
           sx={{
             color: '#c45d3c',
             '&:hover': {
