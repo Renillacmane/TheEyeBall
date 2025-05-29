@@ -161,5 +161,45 @@ module.exports = {
         });
         throw err;
     }
+  },
+
+  searchMoviesAxios : async function(query, sortBy = 'release_date.desc'){
+    try {
+        const url = `${process.env.HOSTNAME}/${process.env.API_VERSION}/search/movie?query=${encodeURIComponent(query)}&sort_by=${sortBy}`;
+        
+        util.printConsole(process.env.DEBUG_PRINT, "Calling " + url + " with axios");
+        console.log("Requesting URL:", url);
+
+        const res = await axios.get(url, {
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${process.env.API_KEY}`
+            }
+        });
+
+        console.log("TMDB Search Response:", {
+            status: res.status,
+            hasData: !!res.data,
+            dataType: typeof res.data,
+            results: res.data?.results ? 'present' : 'missing'
+        });
+
+        if (res.status === 200 && res.data) {
+            const movies = res.data.results || [];
+            console.log(`Retrieved ${movies.length} movies from TMDB search`);
+            return movies;
+        }
+        
+        throw new Error("Invalid response format from provider");
+    }
+    catch(err) {
+        console.error("TMDB Search API Error:", {
+            message: err.message,
+            response: err.response?.data,
+            url: err.config?.url,
+            status: err.response?.status
+        });
+        throw err;
+    }
   }
 }

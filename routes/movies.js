@@ -45,6 +45,31 @@ router.get('/eyeballed', async function(req, res, next) {
     }
 });
 
+/* GET search movies */
+router.get('/search', async function(req, res, next) {
+    const query = req.query.q;
+    const sortOrder = req.query.sort || 'desc';
+    
+    if (!query) {
+        return res.status(400).json({ message: 'Search query is required' });
+    }
+
+    if (!['asc', 'desc'].includes(sortOrder)) {
+        return res.status(400).json({ message: 'Sort order must be "asc" or "desc"' });
+    }
+
+    try {
+        const response = await moviesService.searchMovies(query, sortOrder);
+        if (!response) {
+            throw new ValidationError('No response from movie service');
+        }
+        res.json(response);
+    } catch(err) {
+        console.error('Error in /movies/search:', err);
+        next(err);
+    }
+});
+
 /* GET upcoming movies */
 router.get('/upcoming', async function(req, res, next) {
     try {

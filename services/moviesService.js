@@ -74,6 +74,22 @@ module.exports = {
         return response;
     },
 
+    // Search movies from TMDB
+    searchMovies : async function (query, sortOrder = 'desc'){
+        if (!query || query.trim() === '') {
+            throw new Error('Search query is required');
+        }
+        try {
+            const sortBy = `release_date.${sortOrder}`;
+            response = await tmdbServie.searchMoviesAxios(query, sortBy);
+            util.printConsole(process.env.DEBUG_PRINT, response);
+        }
+        catch(err){
+            throw err;
+        }
+        return response;
+    },
+
     // Process reaction
     createReaction : async function (newReaction){
         try {
