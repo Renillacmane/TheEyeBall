@@ -7,18 +7,22 @@ import CardActionArea from '@mui/material/CardActionArea';
 import CardContent from '@mui/material/CardContent';
 import CardMedia from '@mui/material/CardMedia';
 
-function MovieCard({ movie }) {
+function MovieCard({ movie, onClick }) {
   const defaultImage = 'https://www.themoviedb.org/assets/2/v4/glyphicons/basic/glyphicons-basic-38-picture-grey-c2ebdbb057f2a7614185931650f8cee23fa137b93812ccb132b9df511df1cfac.svg';
 
   return (
     <Grid item xs={12} md={6} id={`movie-card-${movie.id}`}>
-      <Card 
+      <Card
+        onClick={onClick}
+        component="div"
+        role="button"
         sx={{ 
           display: 'flex', 
           height: '100%',
           boxShadow: '0 3px 5px 2px rgba(196, 93, 60, .1)',
           ':hover': {
             boxShadow: '0 6px 10px 4px rgba(196, 93, 60, .2)',
+            cursor: 'pointer'
           },
           transition: 'box-shadow 0.3s ease-in-out'
         }}
@@ -86,6 +90,7 @@ MovieCard.propTypes = {
     poster_path: PropTypes.string,
     vote_average: PropTypes.number,
   }).isRequired,
+  onClick: PropTypes.func.isRequired,
 };
 
 export default MovieCard;

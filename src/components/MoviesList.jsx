@@ -6,10 +6,38 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import MovieCard from './MovieCard';
+import MovieModal from './MovieModal';
 
 function MoviesList({ movies, loading, error }) {
+  const [selectedMovie, setSelectedMovie] = React.useState(null);
+  const [modalOpen, setModalOpen] = React.useState(false);
+
+  const handleMovieClick = (movie) => {
+    setSelectedMovie(movie);
+    setModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setModalOpen(false);
+  };
+
+  const handleNextMovie = () => {
+    const currentIndex = movies.findIndex(movie => movie.id === selectedMovie.id);
+    if (currentIndex < movies.length - 1) {
+      setSelectedMovie(movies[currentIndex + 1]);
+    }
+  };
+
+  const handlePreviousMovie = () => {
+    const currentIndex = movies.findIndex(movie => movie.id === selectedMovie.id);
+    if (currentIndex > 0) {
+      setSelectedMovie(movies[currentIndex - 1]);
+    }
+  };
+
   return (
-    <Container maxWidth="lg">
+    <>
+    <Container maxWidth="lg" sx={{ position: 'relative' }}>
       <main>
         {loading ? (
           <Box 
@@ -57,14 +85,25 @@ function MoviesList({ movies, loading, error }) {
           <Grid container spacing={4} sx={{ mt: 2 }}>
             {movies.map((movie) => (
               <MovieCard 
-                key={movie.id || movie.title} 
-                movie={movie} 
+                key={movie.id || movie.title}
+                movie={movie}
+                onClick={() => handleMovieClick(movie)}
               />
             ))}
           </Grid>
         )}
       </main>
     </Container>
+    <MovieModal
+      open={modalOpen}
+      onClose={handleCloseModal}
+      movie={selectedMovie}
+      onNext={handleNextMovie}
+      onPrevious={handlePreviousMovie}
+      isFirst={selectedMovie ? movies.findIndex(movie => movie.id === selectedMovie.id) === 0 : false}
+      isLast={selectedMovie ? movies.findIndex(movie => movie.id === selectedMovie.id) === movies.length - 1 : false}
+    />
+    </>
   );
 }
 

@@ -93,6 +93,7 @@ export default function MoviesPage({ title, endpoint }) {
               startIcon={<SortIcon />}
               onClick={toggleSort}
               sx={{
+                visibility: 'hidden',
                 color: '#c45d3c',
                 borderColor: '#c45d3c',
                 '&:hover': {
