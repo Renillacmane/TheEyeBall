@@ -74,6 +74,56 @@ module.exports = {
         return response;
     },
 
+    // Fetch movie details with credits and images from TMDB
+    fetchMovieDetails : async function(movieId){
+        if (!movieId) {
+            throw new Error('Movie ID is required');
+        }
+        try {
+            const [details, credits, images] = await Promise.all([
+                tmdbServie.getMovieDetailsAxios(movieId),
+                tmdbServie.getMovieCreditsAxios(movieId),
+                tmdbServie.getMovieImagesAxios(movieId)
+            ]);
+
+            const response = {
+                ...details,
+                credits,
+                images,
+                nowPlaying: false,
+                upcoming: false
+            };
+
+            // Check if movie is in upcoming or now playing lists
+            try {
+                const upcomingMovies = await tmdbServie.getUpcomingAxios();
+                const nowPlayingMovies = await tmdbServie.getNowPlayingAxios();
+                
+                response.upcoming = upcomingMovies.some(m => m.id === parseInt(movieId));
+                response.nowPlaying = nowPlayingMovies.some(m => m.id === parseInt(movieId));
+            } catch (err) {
+                console.error("Error checking movie status:", err);
+            }
+
+            const enrichedResponse = {
+                ...response,
+                // Extract key crew members
+                director: response.credits.crew.find(person => person.job === 'Director'),
+                producer: response.credits.crew.find(person => person.job === 'Producer'),
+                // Get top 5 cast members
+                mainCast: response.credits.cast.slice(0, 5),
+                // Get backdrops for the carousel
+                backdrops: response.images.backdrops || []
+            };
+
+            //util.printConsole(process.env.DEBUG_PRINT, enrichedResponse);
+            return enrichedResponse;
+        }
+        catch(err){
+            throw err;
+        }
+    },
+
     // Search movies from TMDB
     searchMovies : async function (query, sortOrder = 'desc'){
         if (!query || query.trim() === '') {

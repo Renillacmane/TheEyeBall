@@ -73,7 +73,8 @@ module.exports = {
         throw new Error("Invalid response format from provider");
     }
     catch(err) {
-        console.error("TMDB API Error:", {
+        // Always print errors regardless of debug setting
+        console.error("TMDB Upcoming Movies API Error:", {
             message: err.message,
             response: err.response?.data,
             url: err.config?.url,
@@ -113,7 +114,8 @@ module.exports = {
         throw new Error("Invalid response format from provider");
     }
     catch(err) {
-        console.error("TMDB API Error:", {
+        // Always print errors regardless of debug setting
+        console.error("TMDB Now Playing API Error:", {
             message: err.message,
             response: err.response?.data,
             url: err.config?.url,
@@ -153,7 +155,46 @@ module.exports = {
         throw new Error("Invalid response format from provider");
     }
     catch(err) {
-        console.error("TMDB API Error:", {
+        // Always print errors regardless of debug setting
+        console.error("TMDB Top Rated API Error:", {
+            message: err.message,
+            response: err.response?.data,
+            url: err.config?.url,
+            status: err.response?.status
+        });
+        throw err;
+    }
+  },
+
+  getMovieDetailsAxios : async function(movieId) {
+    try {
+        const url = `${process.env.HOSTNAME}/${process.env.API_VERSION}/movie/${movieId}`;
+        
+        util.printConsole(process.env.DEBUG_PRINT, "Calling " + url + " with axios");
+
+        const res = await axios.get(url, {
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${process.env.API_KEY}`
+            }
+        });
+
+        util.printConsole(process.env.DEBUG_PRINT, "Movie Details Response:", {
+            status: res.status,
+            hasData: !!res.data,
+            dataType: typeof res.data,
+            data: res.data
+        });
+
+        if (res.status === 200 && res.data) {
+            return res.data;
+        }
+        
+        throw new Error("Invalid response format from provider");
+    }
+    catch(err) {
+        // Always print errors regardless of debug setting
+        console.error("TMDB Movie Details API Error:", {
             message: err.message,
             response: err.response?.data,
             url: err.config?.url,
@@ -193,7 +234,84 @@ module.exports = {
         throw new Error("Invalid response format from provider");
     }
     catch(err) {
+        // Always print errors regardless of debug setting
         console.error("TMDB Search API Error:", {
+            message: err.message,
+            response: err.response?.data,
+            url: err.config?.url,
+            status: err.response?.status
+        });
+        throw err;
+    }
+  },
+
+  getMovieCreditsAxios : async function(movieId) {
+    try {
+        const url = `${process.env.HOSTNAME}/${process.env.API_VERSION}/movie/${movieId}/credits`;
+        
+        util.printConsole(process.env.DEBUG_PRINT, "Calling " + url + " with axios");
+
+        const res = await axios.get(url, {
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${process.env.API_KEY}`
+            }
+        });
+
+        // util.printConsole(process.env.DEBUG_PRINT, "Movie Credits Response:", {
+        //     status: res.status,
+        //     hasData: !!res.data,
+        //     dataType: typeof res.data,
+        //     data: res.data
+        // });
+
+        if (res.status === 200 && res.data) {
+            return res.data;
+        }
+        
+        throw new Error("Invalid response format from provider");
+    }
+    catch(err) {
+        // Always print errors regardless of debug setting
+        console.error("TMDB Movie Credits API Error:", {
+            message: err.message,
+            response: err.response?.data,
+            url: err.config?.url,
+            status: err.response?.status
+        });
+        throw err;
+    }
+  },
+
+  getMovieImagesAxios : async function(movieId) {
+    try {
+        const url = `${process.env.HOSTNAME}/${process.env.API_VERSION}/movie/${movieId}/images`;
+        
+        util.printConsole(process.env.DEBUG_PRINT, "Calling " + url + " with axios");
+
+        const res = await axios.get(url, {
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${process.env.API_KEY}`
+            }
+        });
+
+        // util.printConsole(process.env.DEBUG_PRINT, "Movie Images Response:", {
+        //     status: res.status,
+        //     hasData: !!res.data,
+        //     dataType: typeof res.data,
+        //     data: res.data
+        // });
+
+        if (res.status === 200 && res.data) {
+            return res.data;
+        }
+        
+        throw new Error("Invalid response format from provider");
+    }
+    catch(err) {
+        // Always print errors regardless of debug setting
+        console.error("TMDB Movie Images API Error:", {
             message: err.message,
             response: err.response?.data,
             url: err.config?.url,

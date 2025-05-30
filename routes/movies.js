@@ -114,4 +114,22 @@ router.post('/reaction', async function(req, res, next) {
     }
 });
 
+/* GET movie details by ID */
+router.get('/:id', async function(req, res, next) {
+    try {
+        const movieId = req.params.id;
+        if (!movieId) {
+            throw new ValidationError('Movie ID is required');
+        }
+        const response = await moviesService.fetchMovieDetails(movieId);
+        if (!response) {
+            throw new ValidationError('No response from movie service');
+        }
+        res.json(response);
+    } catch(err) {
+        console.error('Error in /movies/:id:', err);
+        next(err);
+    }
+});
+
 module.exports = router;
