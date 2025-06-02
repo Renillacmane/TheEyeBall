@@ -1,5 +1,6 @@
 import * as React from 'react';
 import PropTypes from 'prop-types';
+import YouTube from 'react-youtube';
 import { 
   Dialog, DialogContent, IconButton, Typography, Box, 
   CircularProgress, Alert, Chip, Grid, Divider, 
@@ -11,9 +12,45 @@ import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import CloseIcon from '@mui/icons-material/Close';
-import MoviesService from '../services/moviesService';
+import OpenInFullIcon from '@mui/icons-material/OpenInFull';
+import CloseFullscreenIcon from '@mui/icons-material/CloseFullscreen';
+import MoviesService, { REACTIONS } from '../services/moviesService';
+import FavoriteIcon from '@mui/icons-material/Favorite';
+import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
+import RatingBadge from './RatingBadge';
 
-  function MovieModal({ open, onClose, movie, onNext, onPrevious, isFirst, isLast }) {
+  function MovieModal({ open, onClose, movie, onNext, onPrevious, isFirst, isLast, onReaction }) {
+  const [isMaximized, setIsMaximized] = React.useState(false);
+  const [userReaction, setUserReaction] = React.useState(REACTIONS.NONE);
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
+
+  const handleReaction = async (type) => {
+    if (isSubmitting || !movie?.id) return;
+
+    try {
+      setIsSubmitting(true);
+      const newReaction = type === userReaction ? REACTIONS.NONE : type;
+      await MoviesService.createReaction(movie.id, newReaction);
+      setUserReaction(newReaction);
+      if (onReaction) {
+        onReaction(movie.id, newReaction);
+      }
+    } catch (error) {
+      console.error('Failed to submit reaction:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleMaximizeToggle = () => {
+    setIsMaximized(!isMaximized);
+  };
+
+  const handleClose = () => {
+    setIsMaximized(false);
+    onClose();
+  };
+
   const [movieDetails, setMovieDetails] = React.useState(null);
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState(null);
@@ -69,14 +106,15 @@ import MoviesService from '../services/moviesService';
   return (
     <Dialog
       open={open}
-      onClose={onClose}
+      onClose={handleClose}
       PaperProps={{
         sx: {
-          width: '900px',
-          maxWidth: '90vw',
-          height: '450px',
+          width: isMaximized ? '100vw' : '900px',
+          maxWidth: isMaximized ? '100vw' : '90vw',
+          height: isMaximized ? '100vh' : '450px',
           position: 'relative',
-          margin: '40px'
+          margin: isMaximized ? 0 : '40px',
+          transition: 'all 0.3s ease-in-out'
         }
       }}
       sx={{
@@ -86,39 +124,62 @@ import MoviesService from '../services/moviesService';
         }
       }}
     >
-      <IconButton
-        onClick={onClose}
-        sx={{
-          position: 'fixed',
-          right: '20px',
-          top: '20px',
-          padding: '8px',
-          color: '#e17055',
-          backgroundColor: '#fff',
-          boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
-          '&:hover': {
+      <Box sx={{ position: 'fixed', right: '20px', top: '20px', zIndex: 1500, display: 'flex', gap: 1 }}>
+        <IconButton
+          onClick={handleMaximizeToggle}
+          sx={{
+            padding: '8px',
+            color: '#e17055',
             backgroundColor: '#fff',
-            color: '#c45d3c',
-            transform: 'scale(1.1)',
-          },
-          transition: 'transform 0.2s ease-in-out',
-          '&:focus': {
-            outline: 'none',
-          },
-          zIndex: 1500
-        }}
-      >
-        <CloseIcon />
-      </IconButton>
+            boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+            '&:hover': {
+              backgroundColor: '#fff',
+              color: '#c45d3c',
+              transform: 'scale(1.1)',
+            },
+            transition: 'transform 0.2s ease-in-out',
+            '&:focus': {
+              outline: 'none',
+            }
+          }}
+        >
+          {isMaximized ? <CloseFullscreenIcon /> : <OpenInFullIcon />}
+        </IconButton>
+        <IconButton
+          onClick={handleClose}
+          sx={{
+            padding: '8px',
+            color: '#e17055',
+            backgroundColor: '#fff',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+            '&:hover': {
+              backgroundColor: '#fff',
+              color: '#c45d3c',
+              transform: 'scale(1.1)',
+            },
+            transition: 'transform 0.2s ease-in-out',
+            '&:focus': {
+              outline: 'none',
+            }
+          }}
+        >
+          <CloseIcon />
+        </IconButton>
+      </Box>
       <DialogContent sx={{ p: 0, position: 'relative' }}>
         
-          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, height: '450px' }}>
+          <Box sx={{ 
+            display: 'flex', 
+            flexDirection: { xs: 'column', md: 'row' }, 
+            height: isMaximized ? '100vh' : '450px',
+            transition: 'height 0.3s ease-in-out'
+          }}>
           <Box
             component="img"
             sx={{
-              width: { xs: '100%', md: 300 },
-              height: { xs: '300px', md: '450px' },
-              objectFit: 'cover',
+              width: { xs: '100%', md: isMaximized ? '500px' : '300px' },
+              height: { xs: '300px', md: '100%' },
+              objectFit: isMaximized ? 'contain' : 'cover',
               flexShrink: 0,
               position: 'relative'
             }}
@@ -126,7 +187,13 @@ import MoviesService from '../services/moviesService';
             alt={`${displayMovie.title} poster`}
           />
           
-          <Box sx={{ p: 3, flexGrow: 1, overflow: 'auto', height: '450px' }}>
+          <Box sx={{ 
+            p: 3, 
+            flexGrow: 1, 
+            overflow: 'auto', 
+            height: isMaximized ? '100vh' : '450px',
+            transition: 'height 0.3s ease-in-out'
+          }}>
             {loading ? (
               <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
                 <CircularProgress sx={{ color: '#c45d3c' }} />
@@ -139,48 +206,33 @@ import MoviesService from '../services/moviesService';
               <Grid container spacing={3}>
                 <Grid item xs={12}>
                   <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, mb: 2 }}>
-                    <Box
-                        sx={{
-                          width: 45,
-                          height: 45,
-                          borderRadius: '50%',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                        backgroundColor: () => {
-                          const score = displayMovie.vote_average;
-                          if (score < 4) return '#e74c3c';  // Red
-                          if (score < 6) return '#e67e22';  // Orange
-                          // Linear interpolation from light green to dark green for scores 6-10
-                          const intensity = (score - 6) / 8;  // 0 to 1
-                          return `rgb(${Math.round(150 - 78*intensity)}, ${Math.round(188 - 34*intensity)}, ${Math.round(149 - 90*intensity)})`;
-                        },
-                        color: '#fff',
-                        fontWeight: 'bold',
-                        fontSize: '1.1rem',
-                        boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
-                      }}
-                    >
-                      {displayMovie.vote_average?.toFixed(1)}
-                    </Box>
+                    <RatingBadge rating={displayMovie.vote_average} size={45} />
                     <Box sx={{ flex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                      <Typography variant="h4" sx={{ color: '#c45d3c', fontWeight: 600 }}>
-                        {displayMovie.title}
-                      </Typography>
-                      <Box sx={{ 
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 1
-                      }}>
-                        <Typography variant="body2" sx={{ 
-                          fontWeight: 'bold',
-                          color: displayMovie.popularity > (displayMovie.vote_count/2) ? '#2ecc71' : '#f1c40f'
-                        }}>
-                          {displayMovie.popularity?.toFixed(1)}+
+                      <Box sx={{ display: 'flex', alignItems: 'center', position: 'relative', width: '100%' }}>
+                        <Typography variant="h4" sx={{ color: '#c45d3c', fontWeight: 600, pr: 7 }}>
+                          {displayMovie.title}
                         </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          (#️{displayMovie.vote_count?.toLocaleString()})
-                        </Typography>
+                        <IconButton
+                          onClick={() => handleReaction(REACTIONS.LIKE)}
+                          disabled={isSubmitting}
+                          sx={{
+                            position: 'absolute',
+                            right: 0,
+                            top: '50%',
+                            transform: 'translateY(-50%)',
+                            color: '#e17055',
+                            padding: 2,
+                            '& .MuiSvgIcon-root': {
+                              fontSize: 34
+                            },
+                            '&:hover': {
+                              color: '#e17055',
+                              backgroundColor: 'rgba(225, 112, 85, 0.04)'
+                            }
+                          }}
+                        >
+                          {userReaction === REACTIONS.LIKE ? <FavoriteIcon /> : <FavoriteBorderIcon />}
+                        </IconButton>
                       </Box>
                     </Box>
                   </Box>
@@ -205,27 +257,49 @@ import MoviesService from '../services/moviesService';
                     ))}
                   </Box>
 
-                  <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <Typography variant="subtitle2" color="text.secondary">
-                      Release date: {new Date(displayMovie.release_date).toLocaleDateString()}
-                    </Typography>
-                    {displayMovie.status && ['upcoming', 'nowPlaying'].includes(displayMovie.status.toLowerCase()) && (
-                      <Chip 
-                        label={displayMovie.status} 
-                        sx={{ 
-                          height: '20px',
-                          fontSize: '0.7rem',
-                          bgcolor: displayMovie.upcoming ? '#e3f2fd' : 
-                                 displayMovie.nowPlaying ? '#e8f5e9' : 
-                                 '#f5f5f5',
-                          color: displayMovie.upcoming ? '#1976d2' : 
-                                displayMovie.nowPlaying ? '#2e7d32' : 
-                                '#757575',
-                          borderColor: 'currentColor'
-                        }}
-                        variant="outlined"
-                      />
-                    )}
+                  <Box sx={{ 
+                    mb: 2, 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'space-between'
+                  }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                      <Typography variant="subtitle2" color="text.secondary">
+                        Release date: {new Date(displayMovie.release_date).toLocaleDateString()}
+                      </Typography>
+                      {displayMovie.status && ['upcoming', 'nowPlaying'].includes(displayMovie.status.toLowerCase()) && (
+                        <Chip 
+                          label={displayMovie.status} 
+                          sx={{ 
+                            height: '20px',
+                            fontSize: '0.7rem',
+                            bgcolor: displayMovie.upcoming ? '#e3f2fd' : 
+                                   displayMovie.nowPlaying ? '#e8f5e9' : 
+                                   '#f5f5f5',
+                            color: displayMovie.upcoming ? '#1976d2' : 
+                                  displayMovie.nowPlaying ? '#2e7d32' : 
+                                  '#757575',
+                            borderColor: 'currentColor'
+                          }}
+                          variant="outlined"
+                        />
+                      )}
+                    </Box>
+                    <Box sx={{ 
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 1
+                    }}>
+                      <Typography variant="body2" sx={{ 
+                        fontWeight: 'bold',
+                        color: 'text.secondary'
+                      }}>
+                        {displayMovie.popularity?.toFixed(1)}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        (#️{displayMovie.vote_count?.toLocaleString()})
+                      </Typography>
+                    </Box>
                   </Box>
 
                   <Typography variant="body1" paragraph>
@@ -276,23 +350,6 @@ import MoviesService from '../services/moviesService';
                     mb: 2
                   }}>
                     <Typography variant="h6" sx={{ color: '#e17055', display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                      <AttachMoneyIcon /> Financial
-                    </Typography>
-                    <Typography variant="body2">
-                      Budget: ${displayMovie.budget?.toLocaleString() || 'N/A'}
-                    </Typography>
-                    <Typography variant="body2">
-                      Revenue: ${displayMovie.revenue?.toLocaleString() || 'N/A'}
-                    </Typography>
-                  </Box>
-
-                </Grid>
-
-                  <Grid item xs={12} md={6}>
-                  <Box sx={{ 
-                    mb: 2
-                  }}>
-                    <Typography variant="h6" sx={{ color: '#e17055', display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
                       <MovieIcon /> Production
                     </Typography>
                     {displayMovie.production_companies?.slice(0, 3).map(company => (
@@ -304,7 +361,35 @@ import MoviesService from '../services/moviesService';
                       Languages: {displayMovie.spoken_languages?.map(lang => lang.iso_639_1.toUpperCase()).join(', ')}
                     </Typography>
                   </Box>
+                </Grid>
 
+                <Grid item xs={12} md={6}>
+                  <Box sx={{ 
+                    mb: 2
+                  }}>
+                    <Typography variant="h6" sx={{ color: '#e17055', display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                      <AttachMoneyIcon /> Financial
+                    </Typography>
+                    <Typography variant="body2">
+                      Budget: <Box component="span">
+                        ${displayMovie.budget?.toLocaleString() || 'N/A'}
+                      </Box>
+                    </Typography>
+                    <Typography variant="body2">
+                      Revenue: <Box 
+                        component="span" 
+                        sx={{
+                          color: displayMovie.revenue && displayMovie.budget
+                            ? displayMovie.revenue > displayMovie.budget
+                              ? '#27ae60'  // Softer green for profit
+                              : '#e74c3c'  // Red for loss
+                            : 'inherit'    // Default color if either value is missing
+                        }}
+                      >
+                        ${displayMovie.revenue?.toLocaleString() || 'N/A'}
+                      </Box>
+                    </Typography>
+                  </Box>
                 </Grid>
 
 
@@ -314,32 +399,55 @@ import MoviesService from '../services/moviesService';
                     <Typography variant="h6" sx={{ color: '#e17055', mb: 2 }}>
                       Gallery
                     </Typography>
-                    <Box 
-                      sx={{ 
-                        mb: 2,
-                        height: 200,
-                        backgroundColor: 'rgba(0,0,0,0.04)',
-                        borderRadius: 1,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        cursor: 'pointer',
-                        '&:hover': {
-                          backgroundColor: 'rgba(0,0,0,0.08)'
-                        }
-                      }}
-                      onClick={() => {/* TODO: Add trailer functionality */}}
-                    >
-                      <Box sx={{ textAlign: 'center' }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: '#e17055', mb: 1 }}>
-                          <PlayArrowIcon sx={{ fontSize: 40 }} />
-                          <MovieIcon sx={{ fontSize: 32 }} />
+                    {displayMovie.trailer ? (
+                      <Box 
+                        sx={{ 
+                          mb: 2,
+                          backgroundColor: 'rgba(0,0,0,0.04)',
+                          borderRadius: 1,
+                          overflow: 'hidden',
+                          position: 'relative',
+                          paddingTop: '56.25%', // 16:9 aspect ratio (9/16 = 0.5625)
+                        }}
+                      >
+                        <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
+                          <YouTube
+                            videoId={displayMovie.trailer.key}
+                            opts={{
+                              width: '100%',
+                              height: '100%',
+                              playerVars: {
+                                autoplay: 0,
+                                modestbranding: 1,
+                                rel: 0
+                              }
+                            }}
+                            style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
+                          />
                         </Box>
-                        <Typography variant="body2" color="text.secondary">
-                          Click to watch trailer
-                        </Typography>
                       </Box>
-                    </Box>
+                    ) : (
+                      <Box 
+                        sx={{ 
+                          mb: 2,
+                          height: 200,
+                          backgroundColor: 'rgba(0,0,0,0.02)',
+                          borderRadius: 1,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <Box sx={{ textAlign: 'center' }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: '#bbb', mb: 1 }}>
+                            <MovieIcon sx={{ fontSize: 32 }} />
+                          </Box>
+                          <Typography variant="body2" color="text.disabled">
+                            No official trailer available
+                          </Typography>
+                        </Box>
+                      </Box>
+                    )}
                     <ImageList cols={2} gap={8} sx={{ mb: 2 }}>
                       {displayMovie.backdrops.slice(0, 4).map((image, index) => (
                         <ImageListItem key={index}>
@@ -451,7 +559,13 @@ MovieModal.propTypes = {
     })),
     backdrops: PropTypes.arrayOf(PropTypes.shape({
       file_path: PropTypes.string
-    }))
+    })),
+    trailer: PropTypes.shape({
+      key: PropTypes.string,
+      site: PropTypes.string,
+      type: PropTypes.string,
+      official: PropTypes.bool
+    })
   }),
   onNext: PropTypes.func.isRequired,
   onPrevious: PropTypes.func.isRequired,
@@ -462,6 +576,7 @@ MovieModal.propTypes = {
 MovieModal.defaultProps = {
   isFirst: false,
   isLast: false,
+  onReaction: PropTypes.func
 };
 
 export default MovieModal;

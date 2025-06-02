@@ -12,6 +12,7 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import SettingsIcon from '@mui/icons-material/Settings';
 import LogoutIcon from '@mui/icons-material/Logout';
+import FavoriteIcon from '@mui/icons-material/Favorite';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -275,6 +276,12 @@ function Header() {
             }
           }}
         >
+          <MenuItem id="my-picks-menu-item">
+            <ListItemIcon>
+              <FavoriteIcon sx={{ color: '#c45d3c' }} />
+            </ListItemIcon>
+            My Picks
+          </MenuItem>
           <MenuItem id="settings-menu-item" onClick={() => handleMenuAction('settings')}>
             <ListItemIcon>
               <SettingsIcon sx={{ color: '#c45d3c' }} />
