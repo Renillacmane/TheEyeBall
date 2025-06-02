@@ -80,16 +80,18 @@ module.exports = {
             throw new Error('Movie ID is required');
         }
         try {
-            const [details, credits, images] = await Promise.all([
+            const [details, credits, images, trailer] = await Promise.all([
                 tmdbServie.getMovieDetailsAxios(movieId),
                 tmdbServie.getMovieCreditsAxios(movieId),
-                tmdbServie.getMovieImagesAxios(movieId)
+                tmdbServie.getMovieImagesAxios(movieId),
+                tmdbServie.getMovieVideosAxios(movieId)
             ]);
 
             const response = {
                 ...details,
                 credits,
                 images,
+                trailer,
                 nowPlaying: false,
                 upcoming: false
             };

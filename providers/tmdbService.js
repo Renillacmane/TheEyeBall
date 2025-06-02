@@ -47,8 +47,8 @@ module.exports = {
         const url = `${process.env.HOSTNAME}/${process.env.API_VERSION}${process.env.PATH_UPCOMING_MOVIE}`;
         
         util.printConsole(process.env.DEBUG_PRINT, "Calling " + url + " with axios");
-        console.log("Requesting URL:", url);
-
+        console.log("Calling " + url);
+        
         const res = await axios.get(url, {
             headers: {
               'Content-Type': 'application/json',
@@ -64,7 +64,6 @@ module.exports = {
         });
 
         if (res.status === 200 && res.data) {
-            // TMDB API returns { results: [...movies] }
             const movies = res.data.results || [];
             console.log(`Retrieved ${movies.length} movies from TMDB`);
             return movies;
@@ -179,12 +178,10 @@ module.exports = {
             }
         });
 
-        util.printConsole(process.env.DEBUG_PRINT, "Movie Details Response:", {
-            status: res.status,
-            hasData: !!res.data,
-            dataType: typeof res.data,
-            data: res.data
-        });
+        console.log(res)
+
+        util.printConsole(process.env.DEBUG_PRINT, "Movie Details Response: \n");
+        util.printConsole(process.env.DEBUG_PRINT, (res.data || []));
 
         if (res.status === 200 && res.data) {
             return res.data;
@@ -312,6 +309,50 @@ module.exports = {
     catch(err) {
         // Always print errors regardless of debug setting
         console.error("TMDB Movie Images API Error:", {
+            message: err.message,
+            response: err.response?.data,
+            url: err.config?.url,
+            status: err.response?.status
+        });
+        throw err;
+    }
+  },
+
+  getMovieVideosAxios : async function(movieId) {
+    try {
+        const url = `${process.env.HOSTNAME}/${process.env.API_VERSION}/movie/${movieId}/videos`;
+        
+        util.printConsole(process.env.DEBUG_PRINT, `Requesting videos for movie ${movieId}`);
+
+        const res = await axios.get(url, {
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${process.env.API_KEY}`
+            }
+        });
+
+        if (res.status === 200 && res.data) {
+            // Look for official trailers
+            const videos = res.data.results || [];
+            const officialTrailer = videos.find(video => 
+                video.type === 'Trailer' && 
+                video.official === true && 
+                video.site === 'YouTube'
+            );
+
+            util.printConsole(process.env.DEBUG_PRINT, {
+                totalVideos: videos.length,
+                hasOfficialTrailer: !!officialTrailer
+            });
+
+            return officialTrailer || null;
+        }
+        
+        throw new Error("Invalid response format from provider");
+    }
+    catch(err) {
+        // Always print errors regardless of debug setting
+        console.error("TMDB Movie Videos API Error:", {
             message: err.message,
             response: err.response?.data,
             url: err.config?.url,
