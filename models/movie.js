@@ -4,11 +4,10 @@ var schemaBaseOptions = require("../lib/schemaBaseOptions");
 var Schema = mongoose.Schema;
 
 var movieSchema = new Schema({
-        "id_external": String,
-        //"title": String,
-        "thumbsUp": Number,
-        "thumbsDown": Number,
         "date_added": String,
+        "id_external": String,
+        "title": String,
+        "reactions_counter": Number,
 }, schemaBaseOptions);
 
 var Movie = mongoose.model("Movie", movieSchema);

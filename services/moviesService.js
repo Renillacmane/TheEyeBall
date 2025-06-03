@@ -6,76 +6,102 @@ var Movie = require('../models/movie');
 var UserReaction = require('../models/userReaction');
 
 const REACTIONS = {
-    NONE : 0,
-    THUMBS_DOWN : 1,
-    THUMBS_UP : 2,
+    NONE: 0,
+    LIKE: 1,
+}
+
+// Helper function to add user reactions to a list of movies
+async function enrichMoviesWithUserReactions(movies, userId) {
+    if (!userId || !movies) return movies;
+
+    // Get reactions for this user's movies
+    const userReactions = await UserReaction.find({ 
+        id_user: userId, 
+        id_external: { $in: movies.map(m => m.id.toString()) } 
+    }).exec();
+
+    // Map reactions by movie ID
+    const reactionMap = new Map(userReactions.map(r => [r.id_external, r.type]));
+    
+    // Add reaction info to each movie
+    return movies.map(movie => ({
+        ...movie,
+        userReaction: reactionMap.get(movie.id.toString()) || REACTIONS.NONE
+    }));
 }
 
 module.exports = {
     fetchMoviesWithReactions : async function (){
-        // request movies from API
-        var apiMovies;
         try {
-            response = await tmdbServie.getUpcoming();
-            apiMovies = response.results;
+            // Get all movies from our database that have reactions
+            const moviesWithReactions = await Movie.find({ reactions_counter: { $gt: 0 } }).exec();
+            
+            // Get full movie details from TMDB for each movie
+            const enrichedMovies = await Promise.all(moviesWithReactions.map(async (movie) => {
+                try {
+                    const tmdbMovie = await tmdbServie.getMovieDetailsAxios(movie.id_external);
+                    return {
+                        ...tmdbMovie,
+                        reactions_counter: movie.reactions_counter,
+                        date_added: movie.date_added
+                    };
+                } catch (err) {
+                    console.error(`Failed to get details for movie ${movie.id_external}:`, err);
+                    // Return basic info we have in our DB if TMDB fails
+                    return {
+                        id: movie.id_external,
+                        title: movie.title,
+                        reactions_counter: movie.reactions_counter,
+                        date_added: movie.date_added
+                    };
+                }
+            }));
+
+            return enrichedMovies;
+        } catch(err) {
+            console.error("Failed to fetch movies with reactions:", err);
+            throw err;
         }
-        catch(err){
-            console.log("An error ocurred");
-        }
-
-        // convert to inner movie model
-        var results = [];
-        var externalIds = [];
-
-        for(var movie of apiMovies){
-            externalIds.push(movie.id);
-            let convertedMovie = await converter.movieConverter(movie);
-            results.push(convertedMovie);
-        }
-
-        console.log(externalIds);
-
-        return results;
     },
 
     // Fetch upcoming movies from TMDB
-    fetchUpcomingMovies : async function (){
+    fetchUpcomingMovies : async function (userId){
         try {
-            response = await tmdbServie.getUpcomingAxios();
+            const response = await tmdbServie.getUpcomingAxios();
             util.printConsole(process.env.DEBUG_PRINT, response);
+            return await enrichMoviesWithUserReactions(response, userId);
         }
         catch(err){
             throw err;
         }
-        return response;
     },
 
     // Fetch now playing movies from TMDB
-    fetchNowPlayingMovies : async function (){
+    fetchNowPlayingMovies : async function (userId){
         try {
-            response = await tmdbServie.getNowPlayingAxios();
+            const response = await tmdbServie.getNowPlayingAxios();
             util.printConsole(process.env.DEBUG_PRINT, response);
+            return await enrichMoviesWithUserReactions(response, userId);
         }
         catch(err){
             throw err;
         }
-        return response;
     },
 
     // Fetch top rated movies from TMDB
-    fetchTopRatedMovies : async function (){
+    fetchTopRatedMovies : async function (userId){
         try {
-            response = await tmdbServie.getTopRatedAxios();
+            const response = await tmdbServie.getTopRatedAxios();
             util.printConsole(process.env.DEBUG_PRINT, response);
+            return await enrichMoviesWithUserReactions(response, userId);
         }
         catch(err){
             throw err;
         }
-        return response;
     },
 
     // Fetch movie details with credits and images from TMDB
-    fetchMovieDetails : async function(movieId){
+    fetchMovieDetails : async function(movieId, userId){
         if (!movieId) {
             throw new Error('Movie ID is required');
         }
@@ -119,7 +145,8 @@ module.exports = {
             };
 
             //util.printConsole(process.env.DEBUG_PRINT, enrichedResponse);
-            return enrichedResponse;
+            const enrichedWithReactions = await enrichMoviesWithUserReactions([enrichedResponse], userId);
+            return enrichedWithReactions[0];
         }
         catch(err){
             throw err;
@@ -127,32 +154,37 @@ module.exports = {
     },
 
     // Search movies from TMDB
-    searchMovies : async function (query, sortOrder = 'desc'){
+    searchMovies : async function (query, sortOrder = 'desc', userId){
         if (!query || query.trim() === '') {
             throw new Error('Search query is required');
         }
         try {
             const sortBy = `release_date.${sortOrder}`;
-            response = await tmdbServie.searchMoviesAxios(query, sortBy);
+            const response = await tmdbServie.searchMoviesAxios(query, sortBy);
             util.printConsole(process.env.DEBUG_PRINT, response);
+            return await enrichMoviesWithUserReactions(response, userId);
         }
         catch(err){
             throw err;
         }
-        return response;
     },
 
     // Process reaction
     createReaction : async function (newReaction){
         try {
+            console.log("Creating reaction with data:", newReaction);
             var movie;
             var movieCounter = await Movie.countDocuments({ id_external : newReaction.id_external }).exec();
-            console.log("Movies: " + movieCounter);
+            console.log("Found movies with id_external", newReaction.id_external, ":", movieCounter);
             if (movieCounter == 0){
+                // Get movie details from TMDB to get the title
+                const movieDetails = await tmdbServie.getMovieDetailsAxios(newReaction.id_external);
+                
                 movie = await Movie.create({
-                    id_external : newReaction.id_external,
-                    thumbsDown : newReaction.type == REACTIONS.THUMBS_DOWN ? 1 : 0,
-                    thumbsUp : newReaction.type == REACTIONS.THUMBS_UP ? 1 : 0,
+                    id_external: newReaction.id_external,
+                    date_added: new Date().toISOString(),
+                    title: movieDetails.title,
+                    reactions_counter: newReaction.type == REACTIONS.LIKE ? 1 : 0
                 });
 
                 util.printConsole(process.env.DEBUG_PRINT, "movie created");
@@ -161,40 +193,40 @@ module.exports = {
                 movie = await Movie.findOne({ id_external : newReaction.id_external }).exec();
             }
             
-            var reaction;
-            var reactionCounter = await UserReaction.countDocuments({id_user: newReaction.id_user, id_movie : movie._id.toString()}).exec();
-            if (reactionCounter == 0){
-                 reaction = await UserReaction.create({
-                    id_user : newReaction.id_user,
+            const existingReaction = await UserReaction.findOne({
+                id_user: newReaction.id_user, 
+                id_external: newReaction.id_external
+            }).exec();
+
+            if (newReaction.type === REACTIONS.LIKE && !existingReaction) {
+                // Create new reaction if it doesn't exist and type is LIKE
+                await UserReaction.create({
+                    id_user: newReaction.id_user,
                     id_movie: movie._id.toString(),
-                    type:newReaction.type,
+                    id_external: newReaction.id_external,
+                    type: newReaction.type,
                     date: newReaction.date,
                 });
-
-                util.printConsole(process.env.DEBUG_PRINT, "reaction created");
-            }
-            else{
-                reaction = await UserReaction.findOne({ id_user: newReaction.id_user, id_movie : movie._id }).exec();
-                if(reaction.type == newReaction.type){
-                    reaction.type = REACTIONS.NONE;
-                    movie.thumbsDown = newReaction.type == REACTIONS.THUMBS_DOWN? movie.thumbsDown-- : movie.thumbsDown;
-                    movie.thumbsUp = newReaction.type == REACTIONS.THUMBS_UP?  movie.thumbsUp-- : movie.thumbsUp;
+                movie.reactions_counter++;
+            } else if (newReaction.type === REACTIONS.NONE && existingReaction) {
+                // Delete reaction if it exists and type is NONE
+                await UserReaction.deleteOne({
+                    id_user: newReaction.id_user, 
+                    id_external: newReaction.id_external
+                });
+                // Decrement counter if it was a LIKE
+                if (existingReaction.type === REACTIONS.LIKE) {
+                    movie.reactions_counter = Math.max(0, movie.reactions_counter - 1);
                 }
-                else{
-                    reaction.type = newReaction.type;
-                    movie.thumbsDown = newReaction.type == REACTIONS.THUMBS_DOWN? movie.thumbsDown++ : movie.thumbsDown;
-                    movie.thumbsUp = newReaction.type == REACTIONS.THUMBS_UP?  movie.thumbsUp++ : movie.thumbsUp;
-                }
-
-                util.printConsole(process.env.DEBUG_PRINT, "reaction updated");
             }
-
-            await reaction.save();
             await movie.save();
             
-            util.printConsole(process.env.DEBUG_PRINT, reaction);
-
-            return reaction;
+            // Return the updated state
+            return {
+                id_external: newReaction.id_external,
+                type: newReaction.type,
+                date: newReaction.date
+            };
         }
         catch(err){
             console.log(err);
