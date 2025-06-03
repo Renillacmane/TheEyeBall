@@ -13,25 +13,47 @@ function MoviesList({ movies, loading, error }) {
   const [modalOpen, setModalOpen] = React.useState(false);
 
   const handleMovieClick = (movie) => {
-    setSelectedMovie(movie);
+    // Use the version from moviesWithReactions to get latest reaction state
+    const movieWithReaction = moviesWithReactions.find(m => m.id === movie.id);
+    setSelectedMovie(movieWithReaction);
     setModalOpen(true);
   };
 
-  const handleCloseModal = () => {
+  // Keep track of movies with reactions
+  const [moviesWithReactions, setMoviesWithReactions] = React.useState(movies);
+
+  React.useEffect(() => {
+    setMoviesWithReactions(movies);
+  }, [movies]);
+
+  const handleReaction = (movieId, newReaction) => {
+    setMoviesWithReactions(current => 
+      current.map(movie => 
+        movie.id === movieId 
+          ? { ...movie, userReaction: newReaction }
+          : movie
+      )
+    );
+  };
+
+  const handleCloseModal = (lastReaction) => {
+    if (lastReaction !== undefined && selectedMovie) {
+      handleReaction(selectedMovie.id, lastReaction);
+    }
     setModalOpen(false);
   };
 
   const handleNextMovie = () => {
-    const currentIndex = movies.findIndex(movie => movie.id === selectedMovie.id);
-    if (currentIndex < movies.length - 1) {
-      setSelectedMovie(movies[currentIndex + 1]);
+    const currentIndex = moviesWithReactions.findIndex(movie => movie.id === selectedMovie.id);
+    if (currentIndex < moviesWithReactions.length - 1) {
+      setSelectedMovie(moviesWithReactions[currentIndex + 1]);
     }
   };
 
   const handlePreviousMovie = () => {
-    const currentIndex = movies.findIndex(movie => movie.id === selectedMovie.id);
+    const currentIndex = moviesWithReactions.findIndex(movie => movie.id === selectedMovie.id);
     if (currentIndex > 0) {
-      setSelectedMovie(movies[currentIndex - 1]);
+      setSelectedMovie(moviesWithReactions[currentIndex - 1]);
     }
   };
 
@@ -83,11 +105,12 @@ function MoviesList({ movies, loading, error }) {
           </Alert>
         ) : (
           <Grid container spacing={4} sx={{ mt: 2 }}>
-            {movies.map((movie) => (
+            {moviesWithReactions.map((movie) => (
               <MovieCard 
                 key={movie.id || movie.title}
                 movie={movie}
                 onClick={() => handleMovieClick(movie)}
+                onReaction={handleReaction}
               />
             ))}
           </Grid>
@@ -100,8 +123,9 @@ function MoviesList({ movies, loading, error }) {
       movie={selectedMovie}
       onNext={handleNextMovie}
       onPrevious={handlePreviousMovie}
-      isFirst={selectedMovie ? movies.findIndex(movie => movie.id === selectedMovie.id) === 0 : false}
-      isLast={selectedMovie ? movies.findIndex(movie => movie.id === selectedMovie.id) === movies.length - 1 : false}
+      onReaction={handleReaction}
+      isFirst={selectedMovie ? moviesWithReactions.findIndex(movie => movie.id === selectedMovie.id) === 0 : false}
+      isLast={selectedMovie ? moviesWithReactions.findIndex(movie => movie.id === selectedMovie.id) === moviesWithReactions.length - 1 : false}
     />
     </>
   );

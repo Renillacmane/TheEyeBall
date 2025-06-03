@@ -19,19 +19,27 @@ import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import RatingBadge from './RatingBadge';
 
-  function MovieModal({ open, onClose, movie, onNext, onPrevious, isFirst, isLast, onReaction }) {
+function MovieModal({ open, onClose, movie, onNext, onPrevious, isFirst, isLast, onReaction }) {
   const [isMaximized, setIsMaximized] = React.useState(false);
-  const [userReaction, setUserReaction] = React.useState(REACTIONS.NONE);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [movieDetails, setMovieDetails] = React.useState(null);
+  const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState(null);
 
-  const handleReaction = async (type) => {
+  const handleReaction = async () => {
     if (isSubmitting || !movie?.id) return;
 
+    const newReaction = displayMovie.userReaction === REACTIONS.LIKE ? REACTIONS.NONE : REACTIONS.LIKE;
+    
     try {
       setIsSubmitting(true);
-      const newReaction = type === userReaction ? REACTIONS.NONE : type;
       await MoviesService.createReaction(movie.id, newReaction);
-      setUserReaction(newReaction);
+      
+      // Get fresh movie details to update UI
+      const updatedDetails = await MoviesService.fetchMovieDetails(movie.id);
+      setMovieDetails(updatedDetails);
+      
+      // Notify parent component
       if (onReaction) {
         onReaction(movie.id, newReaction);
       }
@@ -48,12 +56,13 @@ import RatingBadge from './RatingBadge';
 
   const handleClose = () => {
     setIsMaximized(false);
-    onClose();
+    // Pass back the final reaction state when closing
+    if (movieDetails?.userReaction !== undefined) {
+      onClose(movieDetails.userReaction);
+    } else {
+      onClose();
+    }
   };
-
-  const [movieDetails, setMovieDetails] = React.useState(null);
-  const [loading, setLoading] = React.useState(false);
-  const [error, setError] = React.useState(null);
 
   React.useEffect(() => {
     const fetchMovieDetails = async () => {
@@ -80,8 +89,6 @@ import RatingBadge from './RatingBadge';
     }
   }, [open, movie?.id]);
 
-  const defaultImage = 'https://www.themoviedb.org/assets/2/v4/glyphicons/basic/glyphicons-basic-38-picture-grey-c2ebdbb057f2a7614185931650f8cee23fa137b93812ccb132b9df511df1cfac.svg';
-
   React.useEffect(() => {
     const handleKeyPress = (event) => {
       if (!open) return;
@@ -99,8 +106,11 @@ import RatingBadge from './RatingBadge';
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, [open, onNext, onPrevious, onClose, isFirst, isLast]);
 
+  const defaultImage = 'https://www.themoviedb.org/assets/2/v4/glyphicons/basic/glyphicons-basic-38-picture-grey-c2ebdbb057f2a7614185931650f8cee23fa137b93812ccb132b9df511df1cfac.svg';
+
   if (!movie) return null;
 
+  // Use movieDetails if available, otherwise fall back to movie prop
   const displayMovie = movieDetails || movie;
 
   return (
@@ -167,13 +177,12 @@ import RatingBadge from './RatingBadge';
         </IconButton>
       </Box>
       <DialogContent sx={{ p: 0, position: 'relative' }}>
-        
-          <Box sx={{ 
-            display: 'flex', 
-            flexDirection: { xs: 'column', md: 'row' }, 
-            height: isMaximized ? '100vh' : '450px',
-            transition: 'height 0.3s ease-in-out'
-          }}>
+        <Box sx={{ 
+          display: 'flex', 
+          flexDirection: { xs: 'column', md: 'row' }, 
+          height: isMaximized ? '100vh' : '450px',
+          transition: 'height 0.3s ease-in-out'
+        }}>
           <Box
             component="img"
             sx={{
@@ -213,7 +222,7 @@ import RatingBadge from './RatingBadge';
                           {displayMovie.title}
                         </Typography>
                         <IconButton
-                          onClick={() => handleReaction(REACTIONS.LIKE)}
+                          onClick={handleReaction}
                           disabled={isSubmitting}
                           sx={{
                             position: 'absolute',
@@ -231,7 +240,7 @@ import RatingBadge from './RatingBadge';
                             }
                           }}
                         >
-                          {userReaction === REACTIONS.LIKE ? <FavoriteIcon /> : <FavoriteBorderIcon />}
+                          {displayMovie.userReaction === REACTIONS.LIKE ? <FavoriteIcon /> : <FavoriteBorderIcon />}
                         </IconButton>
                       </Box>
                     </Box>
@@ -308,7 +317,6 @@ import RatingBadge from './RatingBadge';
                 </Grid>
 
                 <Grid item xs={12}>
-
                   {((displayMovie.director || displayMovie.producer || (displayMovie.mainCast && displayMovie.mainCast.length > 0))) && (
                     <Box sx={{ 
                       mb: 2,
@@ -392,7 +400,6 @@ import RatingBadge from './RatingBadge';
                   </Box>
                 </Grid>
 
-
                 {displayMovie.backdrops && displayMovie.backdrops.length > 0 && (
                   <Grid item xs={12}>
                     <Divider sx={{ mt: 0, mb: 2 }} />
@@ -473,9 +480,9 @@ import RatingBadge from './RatingBadge';
           </Box>
         </Box>
 
-          <IconButton
-            onClick={onPrevious}
-            disabled={isFirst}
+        <IconButton
+          onClick={onPrevious}
+          disabled={isFirst}
           sx={{
             position: 'absolute',
             left: 8,
@@ -491,9 +498,9 @@ import RatingBadge from './RatingBadge';
           <ChevronLeftIcon />
         </IconButton>
 
-          <IconButton
-            onClick={onNext}
-            disabled={isLast}
+        <IconButton
+          onClick={onNext}
+          disabled={isLast}
           sx={{
             position: 'absolute',
             right: 8,
@@ -521,6 +528,7 @@ MovieModal.propTypes = {
     title: PropTypes.string.isRequired,
     overview: PropTypes.string,
     release_date: PropTypes.string,
+    userReaction: PropTypes.number,
     poster_path: PropTypes.string,
     vote_average: PropTypes.number,
     vote_count: PropTypes.number,
@@ -571,12 +579,12 @@ MovieModal.propTypes = {
   onPrevious: PropTypes.func.isRequired,
   isFirst: PropTypes.bool,
   isLast: PropTypes.bool,
+  onReaction: PropTypes.func
 };
 
 MovieModal.defaultProps = {
   isFirst: false,
   isLast: false,
-  onReaction: PropTypes.func
 };
 
 export default MovieModal;

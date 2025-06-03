@@ -10,8 +10,12 @@ import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import { REACTIONS, MoviesService } from '../services/moviesService';
 
 function MovieCard({ movie, onClick, onReaction }) {
-  const [userReaction, setUserReaction] = React.useState(REACTIONS.NONE);
+  const [userReaction, setUserReaction] = React.useState(movie.userReaction || REACTIONS.NONE);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
+
+  React.useEffect(() => {
+    setUserReaction(movie.userReaction || REACTIONS.NONE);
+  }, [movie.userReaction]);
 
   const handleReaction = async (event) => {
     event.stopPropagation(); // Prevent card click when clicking reaction
@@ -61,7 +65,12 @@ function MovieCard({ movie, onClick, onReaction }) {
           image={movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : defaultImage}
           alt={`${movie.title} poster`}
         />
-        <CardContent sx={{ flex: 1, position: 'relative' }}>
+        <CardContent sx={{ 
+          flex: 1, 
+          position: 'relative',
+          display: 'flex',
+          flexDirection: 'column'
+        }}>
           <Box sx={{ position: 'relative' }}>
             <Box sx={{ 
               position: 'absolute',
@@ -84,9 +93,6 @@ function MovieCard({ movie, onClick, onReaction }) {
               {movie.title}
             </Typography>
           </Box>
-          <Typography variant="body2" color="text.secondary" gutterBottom>
-            Release date: {new Date(movie.release_date).toLocaleDateString()}
-          </Typography>
           <Typography 
             variant="body2" 
             paragraph
@@ -103,10 +109,16 @@ function MovieCard({ movie, onClick, onReaction }) {
           </Typography>
           <Box sx={{ 
             display: 'flex',
-            justifyContent: 'flex-end',
+            justifyContent: 'space-between',
             alignItems: 'center',
             mt: 'auto'
           }}>
+            <Typography
+              variant="body2"
+              color="text.secondary"
+            >
+              Release date: {new Date(movie.release_date).toLocaleDateString()}
+            </Typography>
             <IconButton
               size="small"
               onClick={handleReaction}
