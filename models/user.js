@@ -19,7 +19,15 @@ const UserSchema = new Schema({
   password: {
     type: String,
     required: true,
-  }
+  },
+  genrePreferences: [{
+    genre_id: { type: Number, required: true },
+    genre_name: String, // Optional: store genre name for reference
+    total_likes: { type: Number, default: 0 },
+    percentage: { type: Number, default: 0 }, // Percentage of user's total likes
+    _id: false // Disable _id for subdocuments
+  }],
+  totalGenreLikes: { type: Number, default: 0 } // Total likes across all genres for percentage calculation
 }, schemaBaseOptions);
 
 // bcrypt trigger (pre-hook) for storing passwords

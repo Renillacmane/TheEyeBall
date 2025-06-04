@@ -1,9 +1,11 @@
 var tmdbServie = require("../providers/tmdbService");
 var converter = require("../providers/tmdbConverters");
 var util = require("../utils/util");
+var genreService = require('./genreService');
 
 var Movie = require('../models/movie');
 var UserReaction = require('../models/userReaction');
+var CommunityGenres = require('../models/communityGenres');
 
 const REACTIONS = {
     NONE: 0,
@@ -28,6 +30,93 @@ async function enrichMoviesWithUserReactions(movies, userId) {
         ...movie,
         userReaction: reactionMap.get(movie.id.toString()) || REACTIONS.NONE
     }));
+}
+
+// Helper function to calculate weight score for eyeballed movies
+function calculateMovieWeight(movie, localMovie = null, userGenrePreferences = new Map(), communityGenrePreferences = new Map()) {
+    let weight = 0;
+    let weightBreakdown = {};
+    
+    // TMDB popularity factor (0-20 points)
+    // WARNING: Original calculation Math.min((popularity / 100), 2) * 10 has too sparse range for typical TMDB values
+    // const popularityWeight = Math.min((movie.popularity || 0) / 100, 2) * 10;
+    
+    // New calculation: normalize popularity to 0-20 range more effectively
+    const popularityWeight = ((movie.popularity || 0) / 1000 * 20) / 100;
+    weight += popularityWeight;
+    weightBreakdown.popularity = popularityWeight;
+    
+    // Release date proximity factor (0-25 points) - slightly reduced
+    let releaseWeight = 0;
+    if (movie.release_date) {
+        const releaseDate = new Date(movie.release_date);
+        const now = new Date();
+        const daysUntilRelease = Math.abs(releaseDate - now) / (1000 * 60 * 60 * 24);
+        
+        if (daysUntilRelease >= 0 && daysUntilRelease <= 90) {
+            // Movies releasing within 90 days get weight points
+            // Peak weight at 7-30 days before release
+            if (daysUntilRelease <= 30 && daysUntilRelease >= 0) {
+                releaseWeight = 4;
+            } else if (daysUntilRelease <= 60) {
+                releaseWeight = 2;
+            } else {
+                releaseWeight = 1;
+            }
+        }
+    }
+    weight += releaseWeight;
+    weightBreakdown.release = releaseWeight;
+    
+    // Hybrid genre preference weight (0-60 points) - significantly increased importance
+    let genreWeight = 0;
+    if (movie.genre_ids && movie.genre_ids.length > 0) {
+        let userWeight = 0;
+        let communityWeight = 0;
+        let matchedGenres = 0;
+
+        movie.genre_ids.forEach(genreId => {
+            const userPref = userGenrePreferences.get(genreId) || 0;
+            const communityPref = communityGenrePreferences.get(genreId) || 0;
+
+            if (userPref > 0 || communityPref > 0) {
+                userWeight += userPref;
+                communityWeight += communityPref;
+                matchedGenres++;
+            }
+        });
+
+        if (matchedGenres > 0) {
+            // Average the preferences and apply hybrid weighting
+            const avgUserWeight = userWeight / matchedGenres;
+            const avgCommunityWeight = communityWeight / matchedGenres;
+
+            // Hybrid formula: 70% user preference + 30% community preference
+            const hybridWeight = (avgUserWeight * 0.7) + (avgCommunityWeight * 0.3);
+
+            // Scale to 60 points maximum - significantly increased importance
+            genreWeight = hybridWeight * 60;
+        }
+    }
+    weight += genreWeight;
+    weightBreakdown.genre = genreWeight;
+
+    // Local community interest factor (0-15 points) - reduced to balance
+    let communityWeight = 0;
+    if (localMovie && localMovie.reactions_counter) {
+        communityWeight = Math.min(localMovie.reactions_counter / 10, 1) * 15;
+    }
+    weight += communityWeight;
+    weightBreakdown.community = communityWeight;
+    
+    const finalWeight = Math.round(weight * 100) / 100; // Round to 2 decimal places
+    
+    // Simple logging with weight breakdown
+    util.printConsole(process.env.DEBUG_PRINT, 
+        `🎬 "${movie.title}": Pop=${weightBreakdown.popularity.toFixed(3)} + Rel=${weightBreakdown.release.toFixed(1)} + Gen=${weightBreakdown.genre.toFixed(1)} + Com=${weightBreakdown.community.toFixed(1)} = ${finalWeight} pts`
+    );
+    
+    return finalWeight;
 }
 
 module.exports = {
@@ -60,6 +149,72 @@ module.exports = {
             return enrichedMovies;
         } catch(err) {
             console.error("Failed to fetch movies with reactions:", err);
+            throw err;
+        }
+    },
+
+    // Fetch eyeballed movies - upcoming movies filtered and weighted for personalized discovery
+    fetchEyeballedMovies : async function (userId){
+        try {
+            // Get upcoming movies from TMDB
+            const upcomingMovies = await tmdbServie.getUpcomingAxios();
+            
+            // Get user's reactions to filter out already reacted movies
+            let userReactedMovieIds = [];
+            if (userId) {
+                const userReactions = await UserReaction.find({ id_user: userId }).exec();
+                userReactedMovieIds = userReactions.map(r => r.id_external);
+            }
+            
+            // Filter out movies user has already reacted to
+            const unreactedMovies = upcomingMovies.filter(movie => 
+                !userReactedMovieIds.includes(movie.id.toString())
+            );
+            
+            // Get local movie data for community reaction counts
+            const localMovies = await Movie.find({
+                id_external: { $in: unreactedMovies.map(m => m.id.toString()) }
+            }).exec();
+            
+            // Get genre preferences for weight calculation
+            const [userGenrePreferences, communityGenrePreferences] = await Promise.all([
+                genreService.getUserGenrePreferences(userId),
+                genreService.getCommunityGenrePreferences()
+            ]);
+            
+            // Create a map for quick lookup of local movie data
+            const localMovieMap = new Map(localMovies.map(m => [m.id_external, m]));
+            
+            // Calculate weights and add to movies
+            const weightedMovies = unreactedMovies.map(movie => {
+                const localMovie = localMovieMap.get(movie.id.toString());
+                const weight = calculateMovieWeight(
+                    movie, 
+                    localMovie, 
+                    userGenrePreferences, 
+                    communityGenrePreferences
+                );
+                
+
+                
+                return {
+                    ...movie,
+                    weight,
+                    reactions_counter: localMovie ? localMovie.reactions_counter : 0,
+                    userReaction: REACTIONS.NONE
+                };
+            });
+            
+            // Sort by weight (descending) and limit to top results
+            const sortedMovies = weightedMovies
+                .sort((a, b) => b.weight - a.weight)
+                .slice(0, 50); // Limit to top 50 for performance
+            
+            console.log(`Processed ${unreactedMovies.length} unreacted movies, returning top ${sortedMovies.length} by weight`);
+            
+            return sortedMovies;
+        } catch(err) {
+            console.error("Failed to fetch eyeballed movies:", err);
             throw err;
         }
     },
@@ -169,8 +324,8 @@ module.exports = {
         }
     },
 
-    // Process reaction
-    createReaction : async function (newReaction){
+    // Handle user reaction (create, update, or delete)
+    handleUserReaction : async function (newReaction){
         try {
             console.log("Creating reaction with data:", newReaction);
             var movie;
@@ -208,6 +363,18 @@ module.exports = {
                     date: newReaction.date,
                 });
                 movie.reactions_counter++;
+                
+                // Update genre preferences for user and community
+                try {
+                    await genreService.updateGenrePreferences(
+                        newReaction.id_user, 
+                        newReaction.id_external, 
+                        newReaction.type
+                    );
+                } catch (genreErr) {
+                    console.error('Error updating genre preferences:', genreErr);
+                    // Don't fail the reaction if genre update fails
+                }
             } else if (newReaction.type === REACTIONS.NONE && existingReaction) {
                 // Delete reaction if it exists and type is NONE
                 await UserReaction.deleteOne({

@@ -35,8 +35,25 @@ router.get('/top-rated', async function(req, res, next) {
     }
 });
 
-/* GET eyeballed movies */
+/* GET eyeballed movies - personalized upcoming movies discovery */
 router.get('/eyeballed', async function(req, res, next) {
+    try {
+        const userId = req.user ? req.user._id : null;
+        console.log("User making eyeballed request:", req.user);
+        console.log("Using userId for eyeballed:", userId);
+        const response = await moviesService.fetchEyeballedMovies(userId);
+        if (!response) {
+            throw new ValidationError('No response from movie service');
+        }
+        res.json(response);
+    } catch(err) {
+        console.error('Error in /movies/eyeballed:', err);
+        next(err);
+    }
+});
+
+/* GET movies with reactions (legacy eyeballed endpoint) */
+router.get('/with-reactions', async function(req, res, next) {
     try {
         const response = await moviesService.fetchMoviesWithReactions();
         if (!response) {
@@ -44,7 +61,7 @@ router.get('/eyeballed', async function(req, res, next) {
         }
         res.json(response);
     } catch(err) {
-        console.error('Error in /movies/eyeballed:', err);
+        console.error('Error in /movies/with-reactions:', err);
         next(err);
     }
 });
@@ -121,7 +138,7 @@ router.post('/reaction', async function(req, res, next) {
             date
         };
         
-        await moviesService.createReaction(reactionData);
+        await moviesService.handleUserReaction(reactionData);
         res.json({ message: "Reaction submitted successfully" });
     } catch(err) {
         next(err);
