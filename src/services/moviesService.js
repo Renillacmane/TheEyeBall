@@ -17,13 +17,13 @@ export const MoviesService = {
     return response.data;
   },
 
-  createReaction: async (movieId, type) => {
+  handleUserReaction: async (movieId, type) => {
     const response = await apiClient.post('/movies/reaction', {
       id_external: movieId,
       type,
       date: new Date().toISOString()
     });
-    return response.data;
+    return { success: true, newReaction: type };
   }
 };
 

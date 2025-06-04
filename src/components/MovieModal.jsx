@@ -33,18 +33,32 @@ function MovieModal({ open, onClose, movie, onNext, onPrevious, isFirst, isLast,
     
     try {
       setIsSubmitting(true);
-      await MoviesService.createReaction(movie.id, newReaction);
       
-      // Get fresh movie details to update UI
-      const updatedDetails = await MoviesService.fetchMovieDetails(movie.id);
-      setMovieDetails(updatedDetails);
+      // Optimistically update the UI immediately
+      if (movieDetails) {
+        setMovieDetails({
+          ...movieDetails,
+          userReaction: newReaction
+        });
+      }
       
-      // Notify parent component
+      // Submit the reaction to backend
+      await MoviesService.handleUserReaction(movie.id, newReaction);
+      
+      // Notify parent component for syncing with other components
       if (onReaction) {
         onReaction(movie.id, newReaction);
       }
     } catch (error) {
       console.error('Failed to submit reaction:', error);
+      // Revert optimistic update on error
+      if (movieDetails) {
+        const revertedReaction = newReaction === REACTIONS.LIKE ? REACTIONS.NONE : REACTIONS.LIKE;
+        setMovieDetails({
+          ...movieDetails,
+          userReaction: revertedReaction
+        });
+      }
     } finally {
       setIsSubmitting(false);
     }

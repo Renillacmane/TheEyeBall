@@ -24,7 +24,7 @@ function MovieCard({ movie, onClick, onReaction }) {
     try {
       setIsSubmitting(true);
       const newReaction = userReaction === REACTIONS.LIKE ? REACTIONS.NONE : REACTIONS.LIKE;
-      await MoviesService.createReaction(movie.id, newReaction);
+      await MoviesService.handleUserReaction(movie.id, newReaction);
       setUserReaction(newReaction);
       if (onReaction) {
         onReaction(movie.id, newReaction);

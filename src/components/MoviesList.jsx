@@ -34,6 +34,14 @@ function MoviesList({ movies, loading, error }) {
           : movie
       )
     );
+    
+    // Also update the selected movie if it's the same one
+    if (selectedMovie && selectedMovie.id === movieId) {
+      setSelectedMovie(current => ({
+        ...current,
+        userReaction: newReaction
+      }));
+    }
   };
 
   const handleCloseModal = (lastReaction) => {
