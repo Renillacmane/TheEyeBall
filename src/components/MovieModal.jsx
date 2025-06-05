@@ -250,10 +250,32 @@ function MovieModal({ open, onClose, movie, onNext, onPrevious, isFirst, isLast,
                 {error}
               </Alert>
             ) : (
-              <Grid container spacing={3}>
+              <Grid container spacing={2}>
                 <Grid item xs={12}>
                   <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, mb: 2 }}>
-                    <RatingBadge rating={displayMovie.vote_average} size={45} />
+                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5 }}>
+                      <RatingBadge rating={displayMovie.vote_average} size={45} />
+                      <Box sx={{ 
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: 0.25
+                      }}>
+                        <Typography variant="caption" sx={{ 
+                          fontWeight: 'bold',
+                          color: 'text.secondary',
+                          fontSize: '0.65rem'
+                        }}>
+                          {displayMovie.popularity?.toFixed(1)}
+                        </Typography>
+                        <Typography variant="caption" sx={{ 
+                          color: 'text.secondary',
+                          fontSize: '0.6rem'
+                        }}>
+                          (#{displayMovie.vote_count?.toLocaleString()})
+                        </Typography>
+                      </Box>
+                    </Box>
                     <Box sx={{ flex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                       <Box sx={{ display: 'flex', flexDirection: 'column', position: 'relative', width: '100%' }}>
                         <Typography variant="h4" sx={{ color: '#c45d3c', fontWeight: 600, pr: 7 }}>
@@ -317,60 +339,63 @@ function MovieModal({ open, onClose, movie, onNext, onPrevious, isFirst, isLast,
                     ))}
                   </Box>
 
-                  <Box sx={{ 
-                    mb: 2, 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    justifyContent: 'space-between'
-                  }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                      <Typography variant="subtitle2" color="text.secondary">
-                        Release date: {new Date(displayMovie.release_date).toLocaleDateString()}
-                      </Typography>
-                      {displayMovie.status && ['upcoming', 'nowPlaying'].includes(displayMovie.status.toLowerCase()) && (
-                        <Chip 
-                          label={displayMovie.status} 
-                          sx={{ 
-                            height: '20px',
-                            fontSize: '0.7rem',
-                            bgcolor: displayMovie.upcoming ? '#e3f2fd' : 
-                                   displayMovie.nowPlaying ? '#e8f5e9' : 
-                                   '#f5f5f5',
-                            color: displayMovie.upcoming ? '#1976d2' : 
-                                  displayMovie.nowPlaying ? '#2e7d32' : 
-                                  '#757575',
-                            borderColor: 'currentColor'
-                          }}
-                          variant="outlined"
-                        />
-                      )}
-                    </Box>
-                    <Box sx={{ 
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 1
-                    }}>
-                      <Typography variant="body2" sx={{ 
-                        fontWeight: 'bold',
-                        color: 'text.secondary'
-                      }}>
-                        {displayMovie.popularity?.toFixed(1)}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        (#{displayMovie.vote_count?.toLocaleString()})
-                      </Typography>
-                    </Box>
-                  </Box>
-
                   <Typography variant="body1" paragraph>
                     {displayMovie.overview}
                   </Typography>
+
+                  <Box sx={{ 
+                    mb: 1, 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: 2
+                  }}>
+                    <Typography variant="subtitle2" color="text.secondary">
+                      Release date: {new Date(displayMovie.release_date).toLocaleDateString()}
+                    </Typography>
+                    {displayMovie.status && ['upcoming', 'nowPlaying'].includes(displayMovie.status.toLowerCase()) && (
+                      <Chip 
+                        label={displayMovie.status} 
+                        sx={{ 
+                          height: '20px',
+                          fontSize: '0.7rem',
+                          bgcolor: displayMovie.upcoming ? '#e3f2fd' : 
+                                 displayMovie.nowPlaying ? '#e8f5e9' : 
+                                 '#f5f5f5',
+                          color: displayMovie.upcoming ? '#1976d2' : 
+                                displayMovie.nowPlaying ? '#2e7d32' : 
+                                '#757575',
+                          borderColor: 'currentColor'
+                        }}
+                        variant="outlined"
+                      />
+                    )}
+                  </Box>
+
+                  {displayMovie.homepage && (
+                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                      Official site:{' '}
+                      <Box 
+                        component="a" 
+                        href={displayMovie.homepage}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        sx={{ 
+                          color: '#e17055',
+                          textDecoration: 'none',
+                          '&:hover': {
+                            textDecoration: 'underline'
+                          }
+                        }}
+                      >
+                        {displayMovie.homepage}
+                      </Box>
+                    </Typography>
+                  )}
                 </Grid>
 
                 <Grid item xs={12}>
                   {((displayMovie.director || displayMovie.producer || (displayMovie.mainCast && displayMovie.mainCast.length > 0))) && (
                     <Box sx={{ 
-                      mb: 2,
                       p: 1.5,
                       backgroundColor: '#fff3ef',
                       borderRadius: 1
@@ -592,6 +617,7 @@ MovieModal.propTypes = {
     status: PropTypes.string,
     upcoming: PropTypes.bool,
     nowPlaying: PropTypes.bool,
+    homepage: PropTypes.string,
     genres: PropTypes.arrayOf(PropTypes.shape({
       id: PropTypes.number,
       name: PropTypes.string
