@@ -121,6 +121,38 @@ router.get('/reacted', async function(req, res, next) {
     }
 });
 
+/* GET user's liked movies for My Picks page */
+router.get('/my-picks/movies', async function(req, res, next) {
+    try {
+        const userId = req.user ? req.user._id : null;
+        if (!userId) {
+            throw new ValidationError('User authentication required');
+        }
+        
+        const likedMovies = await moviesService.fetchUserLikedMovies(userId);
+        res.json(likedMovies);
+    } catch(err) {
+        console.error('Error in /movies/my-picks/movies:', err);
+        next(err);
+    }
+});
+
+/* GET user's top genres for My Picks page */
+router.get('/my-picks/genres', async function(req, res, next) {
+    try {
+        const userId = req.user ? req.user._id : null;
+        if (!userId) {
+            throw new ValidationError('User authentication required');
+        }
+        
+        const topGenres = await moviesService.fetchUserTopGenres(userId);
+        res.json(topGenres);
+    } catch(err) {
+        console.error('Error in /movies/my-picks/genres:', err);
+        next(err);
+    }
+});
+
 /* POST movie reaction */
 router.post('/reaction', async function(req, res, next) {
     try {

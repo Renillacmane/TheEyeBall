@@ -1,4 +1,4 @@
-var tmdbServie = require("../providers/tmdbService");
+var tmdbService = require("../providers/tmdbService");
 var converter = require("../providers/tmdbConverters");
 var util = require("../utils/util");
 var genreService = require('./genreService');
@@ -6,6 +6,7 @@ var genreService = require('./genreService');
 var Movie = require('../models/movie');
 var UserReaction = require('../models/userReaction');
 var CommunityGenres = require('../models/communityGenres');
+var User = require('../models/user');
 
 const REACTIONS = {
     NONE: 0,
@@ -120,6 +121,90 @@ function calculateMovieWeight(movie, localMovie = null, userGenrePreferences = n
 }
 
 module.exports = {
+    // Fetch user's liked movies for "My Picks" page
+    fetchUserLikedMovies : async function (userId){
+        try {
+            if (!userId) {
+                return [];
+            }
+
+            // Get user's liked movie reactions
+            const likedReactions = await UserReaction.find({ 
+                id_user: userId, 
+                type: REACTIONS.LIKE 
+            }).sort({ date: -1 }).exec();
+
+            if (likedReactions.length === 0) {
+                return [];
+            }
+
+            // Get full movie details from TMDB for each liked movie
+            const likedMovies = await Promise.all(likedReactions.map(async (reaction) => {
+                try {
+                    // Get from our database for local data
+                    const localMovie = await Movie.findOne({ id_external: reaction.id_external }).exec();
+                    
+                    // Get full details from TMDB including genres
+                    const tmdbMovie = await tmdbService.getMovieDetailsAxios(reaction.id_external);
+                    
+                    return {
+                        id: reaction.id_external,
+                        title: tmdbMovie.title || (localMovie ? localMovie.title : 'Unknown Movie'),
+                        likedDate: reaction.date,
+                        userReaction: REACTIONS.LIKE,
+                        reactions_counter: localMovie ? localMovie.reactions_counter : 0,
+                        genres: tmdbMovie.genres || [], // Include genre information
+                        poster_path: tmdbMovie.poster_path,
+                        release_date: tmdbMovie.release_date
+                    };
+                } catch (err) {
+                    console.error(`Failed to get details for liked movie ${reaction.id_external}:`, err);
+                    // Fallback: try to get from local database
+                    const localMovie = await Movie.findOne({ id_external: reaction.id_external }).exec();
+                    return {
+                        id: reaction.id_external,
+                        title: localMovie ? localMovie.title : 'Unknown Movie',
+                        likedDate: reaction.date,
+                        userReaction: REACTIONS.LIKE,
+                        reactions_counter: localMovie ? localMovie.reactions_counter : 0,
+                        genres: [], // No genre info available
+                        poster_path: null,
+                        release_date: null
+                    };
+                }
+            }));
+
+            return likedMovies;
+        } catch(err) {
+            console.error("Failed to fetch user liked movies:", err);
+            throw err;
+        }
+    },
+
+    // Fetch user's top 6 genres for "My Picks" page
+    fetchUserTopGenres : async function (userId){
+        try {
+            if (!userId) {
+                return [];
+            }
+
+            const user = await User.findById(userId).exec();
+            if (!user || !user.genrePreferences || user.genrePreferences.length === 0) {
+                return [];
+            }
+
+            // Sort by total_likes descending and take top 6
+            const topGenres = user.genrePreferences
+                .sort((a, b) => b.total_likes - a.total_likes)
+                .slice(0, 6);
+
+            return topGenres;
+        } catch(err) {
+            console.error("Failed to fetch user top genres:", err);
+            throw err;
+        }
+    },
+
     fetchMoviesWithReactions : async function (){
         try {
             // Get all movies from our database that have reactions
@@ -128,7 +213,7 @@ module.exports = {
             // Get full movie details from TMDB for each movie
             const enrichedMovies = await Promise.all(moviesWithReactions.map(async (movie) => {
                 try {
-                    const tmdbMovie = await tmdbServie.getMovieDetailsAxios(movie.id_external);
+                    const tmdbMovie = await tmdbService.getMovieDetailsAxios(movie.id_external);
                     return {
                         ...tmdbMovie,
                         reactions_counter: movie.reactions_counter,
@@ -157,7 +242,7 @@ module.exports = {
     fetchEyeballedMovies : async function (userId){
         try {
             // Get upcoming movies from TMDB
-            const upcomingMovies = await tmdbServie.getUpcomingAxios();
+            const upcomingMovies = await tmdbService.getUpcomingAxios();
             
             // Get user's reactions to filter out already reacted movies
             let userReactedMovieIds = [];
@@ -222,7 +307,7 @@ module.exports = {
     // Fetch upcoming movies from TMDB
     fetchUpcomingMovies : async function (userId){
         try {
-            const response = await tmdbServie.getUpcomingAxios();
+            const response = await tmdbService.getUpcomingAxios();
             util.printConsole(process.env.DEBUG_PRINT, response);
             return await enrichMoviesWithUserReactions(response, userId);
         }
@@ -234,7 +319,7 @@ module.exports = {
     // Fetch now playing movies from TMDB
     fetchNowPlayingMovies : async function (userId){
         try {
-            const response = await tmdbServie.getNowPlayingAxios();
+            const response = await tmdbService.getNowPlayingAxios();
             util.printConsole(process.env.DEBUG_PRINT, response);
             return await enrichMoviesWithUserReactions(response, userId);
         }
@@ -246,7 +331,7 @@ module.exports = {
     // Fetch top rated movies from TMDB
     fetchTopRatedMovies : async function (userId){
         try {
-            const response = await tmdbServie.getTopRatedAxios();
+            const response = await tmdbService.getTopRatedAxios();
             util.printConsole(process.env.DEBUG_PRINT, response);
             return await enrichMoviesWithUserReactions(response, userId);
         }
@@ -262,10 +347,10 @@ module.exports = {
         }
         try {
             const [details, credits, images, trailer] = await Promise.all([
-                tmdbServie.getMovieDetailsAxios(movieId),
-                tmdbServie.getMovieCreditsAxios(movieId),
-                tmdbServie.getMovieImagesAxios(movieId),
-                tmdbServie.getMovieVideosAxios(movieId)
+                tmdbService.getMovieDetailsAxios(movieId),
+                tmdbService.getMovieCreditsAxios(movieId),
+                tmdbService.getMovieImagesAxios(movieId),
+                tmdbService.getMovieVideosAxios(movieId)
             ]);
 
             const response = {
@@ -279,8 +364,8 @@ module.exports = {
 
             // Check if movie is in upcoming or now playing lists
             try {
-                const upcomingMovies = await tmdbServie.getUpcomingAxios();
-                const nowPlayingMovies = await tmdbServie.getNowPlayingAxios();
+                const upcomingMovies = await tmdbService.getUpcomingAxios();
+                const nowPlayingMovies = await tmdbService.getNowPlayingAxios();
                 
                 response.upcoming = upcomingMovies.some(m => m.id === parseInt(movieId));
                 response.nowPlaying = nowPlayingMovies.some(m => m.id === parseInt(movieId));
@@ -315,7 +400,7 @@ module.exports = {
         }
         try {
             const sortBy = `release_date.${sortOrder}`;
-            const response = await tmdbServie.searchMoviesAxios(query, sortBy);
+            const response = await tmdbService.searchMoviesAxios(query, sortBy);
             util.printConsole(process.env.DEBUG_PRINT, response);
             return await enrichMoviesWithUserReactions(response, userId);
         }
@@ -333,7 +418,7 @@ module.exports = {
             console.log("Found movies with id_external", newReaction.id_external, ":", movieCounter);
             if (movieCounter == 0){
                 // Get movie details from TMDB to get the title
-                const movieDetails = await tmdbServie.getMovieDetailsAxios(newReaction.id_external);
+                const movieDetails = await tmdbService.getMovieDetailsAxios(newReaction.id_external);
                 
                 movie = await Movie.create({
                     id_external: newReaction.id_external,

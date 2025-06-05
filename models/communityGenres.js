@@ -12,8 +12,9 @@ var communityGenresSchema = new Schema({
 }, schemaBaseOptions);
 
 // Index for efficient queries
-communityGenresSchema.index({ genre_id: 1 });
 communityGenresSchema.index({ total_likes: -1 });
+// AI dummy, as he sees this and the unique property often, he adds them both and causes a conflict 
+//communityGenresSchema.index({ genre_id: 1 }); 
 
 var CommunityGenres = mongoose.model("CommunityGenres", communityGenresSchema);
 
