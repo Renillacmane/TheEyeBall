@@ -127,6 +127,11 @@ function MovieModal({ open, onClose, movie, onNext, onPrevious, isFirst, isLast,
   // Use movieDetails if available, otherwise fall back to movie prop
   const displayMovie = movieDetails || movie;
 
+  // Get the first backdrop image for background (if enabled via environment variable)
+  const isBackdropEnabled = import.meta.env.VITE_ENABLE_MODAL_BACKDROP === 'true';
+  const backdropImage = displayMovie.backdrops?.[0]?.file_path;
+  const backdropUrl = isBackdropEnabled && backdropImage ? `https://image.tmdb.org/t/p/w1280${backdropImage}` : null;
+
   return (
     <Dialog
       open={open}
@@ -190,12 +195,31 @@ function MovieModal({ open, onClose, movie, onNext, onPrevious, isFirst, isLast,
           <CloseIcon />
         </IconButton>
       </Box>
-      <DialogContent sx={{ p: 0, position: 'relative' }}>
+      <DialogContent sx={{ p: 0, position: 'relative', overflow: 'hidden' }}>
+        {backdropUrl && (
+          <Box
+            sx={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundImage: `url(${backdropUrl})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              backgroundRepeat: 'no-repeat',
+              opacity: 0.05,
+              zIndex: 0
+            }}
+          />
+        )}
         <Box sx={{ 
           display: 'flex', 
           flexDirection: { xs: 'column', md: 'row' }, 
           height: isMaximized ? '100vh' : '450px',
-          transition: 'height 0.3s ease-in-out'
+          transition: 'height 0.3s ease-in-out',
+          position: 'relative',
+          zIndex: 2
         }}>
           <Box
             component="img"
@@ -231,10 +255,23 @@ function MovieModal({ open, onClose, movie, onNext, onPrevious, isFirst, isLast,
                   <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, mb: 2 }}>
                     <RatingBadge rating={displayMovie.vote_average} size={45} />
                     <Box sx={{ flex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', position: 'relative', width: '100%' }}>
+                      <Box sx={{ display: 'flex', flexDirection: 'column', position: 'relative', width: '100%' }}>
                         <Typography variant="h4" sx={{ color: '#c45d3c', fontWeight: 600, pr: 7 }}>
                           {displayMovie.title}
                         </Typography>
+                        {displayMovie.tagline && (
+                          <Typography 
+                            variant="body2" 
+                            sx={{ 
+                              color: '#888', 
+                              fontStyle: 'italic',
+                              mt: 0.5,
+                              pr: 7
+                            }}
+                          >
+                            "{displayMovie.tagline}"
+                          </Typography>
+                        )}
                         <IconButton
                           onClick={handleReaction}
                           disabled={isSubmitting}
@@ -320,7 +357,7 @@ function MovieModal({ open, onClose, movie, onNext, onPrevious, isFirst, isLast,
                         {displayMovie.popularity?.toFixed(1)}
                       </Typography>
                       <Typography variant="caption" color="text.secondary">
-                        (#️{displayMovie.vote_count?.toLocaleString()})
+                        (#{displayMovie.vote_count?.toLocaleString()})
                       </Typography>
                     </Box>
                   </Box>
@@ -504,6 +541,7 @@ function MovieModal({ open, onClose, movie, onNext, onPrevious, isFirst, isLast,
             transform: 'translateY(-50%)',
             color: 'white',
             backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            zIndex: 10,
             '&:hover': {
               backgroundColor: 'rgba(0, 0, 0, 0.7)',
             },
@@ -522,6 +560,7 @@ function MovieModal({ open, onClose, movie, onNext, onPrevious, isFirst, isLast,
             transform: 'translateY(-50%)',
             color: 'white',
             backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            zIndex: 10,
             '&:hover': {
               backgroundColor: 'rgba(0, 0, 0, 0.7)',
             },
@@ -540,6 +579,7 @@ MovieModal.propTypes = {
   movie: PropTypes.shape({
     id: PropTypes.number,
     title: PropTypes.string.isRequired,
+    tagline: PropTypes.string,
     overview: PropTypes.string,
     release_date: PropTypes.string,
     userReaction: PropTypes.number,
