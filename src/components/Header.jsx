@@ -61,7 +61,9 @@ function Header() {
 
   const handleMenuAction = (action) => {
     handleClose();
-    if (action === 'settings') {
+    if (action === 'my-picks') {
+      navigate('/my-picks');
+    } else if (action === 'settings') {
       navigate('/settings');
     } else if (action === 'logout') {
       logout();
@@ -276,7 +278,7 @@ function Header() {
             }
           }}
         >
-          <MenuItem id="my-picks-menu-item">
+          <MenuItem id="my-picks-menu-item" onClick={() => handleMenuAction('my-picks')}>
             <ListItemIcon>
               <FavoriteIcon sx={{ color: '#c45d3c' }} />
             </ListItemIcon>

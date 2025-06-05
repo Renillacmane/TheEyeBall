@@ -24,6 +24,16 @@ export const MoviesService = {
       date: new Date().toISOString()
     });
     return { success: true, newReaction: type };
+  },
+
+  fetchUserLikedMovies: async () => {
+    const response = await apiClient.get('/movies/my-picks/movies');
+    return response.data;
+  },
+
+  fetchUserTopGenres: async () => {
+    const response = await apiClient.get('/movies/my-picks/genres');
+    return response.data;
   }
 };
 

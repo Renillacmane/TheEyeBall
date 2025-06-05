@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import SignIn from './layouts/sign-in/SignIn';
 import SignUp from './layouts/sign-up/SignUp';
 import Settings from './layouts/settings/Settings';
+import MyPicks from './layouts/my-picks/MyPicks';
 import MoviesPage from './pages/movies/MoviesPage';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import './App.css';
@@ -41,6 +42,11 @@ function AppRoutes() {
             endpoint="/movies/search"
           />
         ) : <Navigate to="/signin" replace />
+      } />
+
+      {/* My Picks Route */}
+      <Route path="/my-picks" element={
+        isAuthenticated ? <MyPicks /> : <Navigate to="/signin" replace />
       } />
 
       {/* Settings Route */}
