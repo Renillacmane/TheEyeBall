@@ -16,14 +16,23 @@ const cors = require('./middleware/cors');
 const { authLimiter, apiLimiter, bodyLimit } = require('./middleware/security');
 
 // Initialize database and authentication
-require('./database/init');
+const { initializeDatabase } = require('./database/init');
 require('./auth/auth_strategy');
+
+// Initialize database connection
+initializeDatabase();
 
 const app = express();
 
-// Security middleware
-app.use(helmet());
+// CORS must come before Helmet to avoid conflicts
 app.use(cors);
+
+// Configure Helmet to work with CORS
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+  crossOriginOpenerPolicy: false,
+  crossOriginEmbedderPolicy: false
+}));
 app.use(bodyLimit);
 
 // Basic middleware
@@ -36,6 +45,16 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/login', authLimiter);
 app.use('/signup', authLimiter);
 app.use(apiLimiter);
+
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.status(200).json({ 
+    status: 'healthy', 
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    environment: process.env.NODE_ENV || 'development'
+  });
+});
 
 // Routes with authentication
 app.use('/', authRouter);

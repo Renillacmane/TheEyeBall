@@ -2,19 +2,32 @@ var http = require("http");
 var util = require("../utils/util");
 var axios = require('axios');
 
+// TMDB API Configuration
+const TMDB_API_KEY = process.env.TMDB_API_KEY;
+const TMDB_BASE_URL = process.env.TMDB_BASE_URL || 'https://api.themoviedb.org';
+const API_VERSION = process.env.API_VERSION || '3';
+const PATH_UPCOMING_MOVIE = process.env.PATH_UPCOMING_MOVIE || '/movie/upcoming';
+const PATH_NOW_PLAYING = process.env.PATH_NOW_PLAYING || '/movie/now_playing';
+const PATH_TOP_RATED = process.env.PATH_TOP_RATED || '/movie/top_rated';
+
+// Validate API key
+if (!TMDB_API_KEY) {
+    console.error('❌ TMDB_API_KEY is not set in environment variables');
+    throw new Error('TMDB_API_KEY is required');
+}
+
 var options = {
-    hostname: process.env.HOSTNAME,
-    port: null,
+    hostname: 'api.themoviedb.org',
+    port: 443,
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${process.env.API_KEY}`
     },
 };
 
 module.exports = {
   getUpcoming : function(){
       options.method = "GET";
-      options.path = `/api/${process.env.API_VERSION}${process.env.PATH_UPCOMING_MOVIE}`;
+      options.path = `/${API_VERSION}${PATH_UPCOMING_MOVIE}?api_key=${TMDB_API_KEY}`;
       let data = '';
       
       util.printConsole(process.env.DEBUG_PRINT, "Calling " + options.path + " with promise");
@@ -44,15 +57,14 @@ module.exports = {
 
   getUpcomingAxios : async function(){
     try {
-        const url = `${process.env.HOSTNAME}/${process.env.API_VERSION}${process.env.PATH_UPCOMING_MOVIE}`;
+        const url = `${TMDB_BASE_URL}/${API_VERSION}${PATH_UPCOMING_MOVIE}?api_key=${TMDB_API_KEY}`;
         
         util.printConsole(process.env.DEBUG_PRINT, "Calling " + url + " with axios");
         console.log("Calling " + url);
         
         const res = await axios.get(url, {
             headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${process.env.API_KEY}`
+              'Content-Type': 'application/json'
             }
         });
 
@@ -85,15 +97,14 @@ module.exports = {
 
   getNowPlayingAxios : async function(){
     try {
-        const url = `${process.env.HOSTNAME}/${process.env.API_VERSION}${process.env.PATH_NOW_PLAYING}`;
+        const url = `${TMDB_BASE_URL}/${API_VERSION}${PATH_NOW_PLAYING}?api_key=${TMDB_API_KEY}`;
         
         util.printConsole(process.env.DEBUG_PRINT, "Calling " + url + " with axios");
         console.log("Requesting URL:", url);
 
         const res = await axios.get(url, {
             headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${process.env.API_KEY}`
+              'Content-Type': 'application/json'
             }
         });
 
@@ -126,15 +137,14 @@ module.exports = {
 
   getTopRatedAxios : async function(){
     try {
-        const url = `${process.env.HOSTNAME}/${process.env.API_VERSION}${process.env.PATH_TOP_RATED}`;
+        const url = `${TMDB_BASE_URL}/${API_VERSION}${PATH_TOP_RATED}?api_key=${TMDB_API_KEY}`;
         
         util.printConsole(process.env.DEBUG_PRINT, "Calling " + url + " with axios");
         console.log("Requesting URL:", url);
 
         const res = await axios.get(url, {
             headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${process.env.API_KEY}`
+              'Content-Type': 'application/json'
             }
         });
 
@@ -167,14 +177,13 @@ module.exports = {
 
   getMovieDetailsAxios : async function(movieId) {
     try {
-        const url = `${process.env.HOSTNAME}/${process.env.API_VERSION}/movie/${movieId}`;
+        const url = `${TMDB_BASE_URL}/${API_VERSION}/movie/${movieId}?api_key=${TMDB_API_KEY}`;
         
         util.printConsole(process.env.DEBUG_PRINT, "Calling " + url + " with axios");
 
         const res = await axios.get(url, {
             headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${process.env.API_KEY}`
+              'Content-Type': 'application/json'
             }
         });
 
@@ -203,15 +212,14 @@ module.exports = {
 
   searchMoviesAxios : async function(query, sortBy = 'release_date.desc'){
     try {
-        const url = `${process.env.HOSTNAME}/${process.env.API_VERSION}/search/movie?query=${encodeURIComponent(query)}&sort_by=${sortBy}`;
+        const url = `${TMDB_BASE_URL}/${API_VERSION}/search/movie?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(query)}&sort_by=${sortBy}`;
         
         util.printConsole(process.env.DEBUG_PRINT, "Calling " + url + " with axios");
         console.log("Requesting URL:", url);
 
         const res = await axios.get(url, {
             headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${process.env.API_KEY}`
+              'Content-Type': 'application/json'
             }
         });
 
@@ -244,14 +252,13 @@ module.exports = {
 
   getMovieCreditsAxios : async function(movieId) {
     try {
-        const url = `${process.env.HOSTNAME}/${process.env.API_VERSION}/movie/${movieId}/credits`;
+        const url = `${TMDB_BASE_URL}/${API_VERSION}/movie/${movieId}/credits?api_key=${TMDB_API_KEY}`;
         
         util.printConsole(process.env.DEBUG_PRINT, "Calling " + url + " with axios");
 
         const res = await axios.get(url, {
             headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${process.env.API_KEY}`
+              'Content-Type': 'application/json'
             }
         });
 
@@ -282,14 +289,13 @@ module.exports = {
 
   getMovieImagesAxios : async function(movieId) {
     try {
-        const url = `${process.env.HOSTNAME}/${process.env.API_VERSION}/movie/${movieId}/images`;
+        const url = `${TMDB_BASE_URL}/${API_VERSION}/movie/${movieId}/images?api_key=${TMDB_API_KEY}`;
         
         util.printConsole(process.env.DEBUG_PRINT, "Calling " + url + " with axios");
 
         const res = await axios.get(url, {
             headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${process.env.API_KEY}`
+              'Content-Type': 'application/json'
             }
         });
 
@@ -320,14 +326,13 @@ module.exports = {
 
   getMovieVideosAxios : async function(movieId) {
     try {
-        const url = `${process.env.HOSTNAME}/${process.env.API_VERSION}/movie/${movieId}/videos`;
+        const url = `${TMDB_BASE_URL}/${API_VERSION}/movie/${movieId}/videos?api_key=${TMDB_API_KEY}`;
         
         util.printConsole(process.env.DEBUG_PRINT, `Requesting videos for movie ${movieId}`);
 
         const res = await axios.get(url, {
             headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${process.env.API_KEY}`
+              'Content-Type': 'application/json'
             }
         });
 

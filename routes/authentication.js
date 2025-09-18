@@ -6,7 +6,7 @@ const UserModel = require('../models/user');
 const { ValidationError, InvalidCredentialsError } = require('../errors/auth-errors');
 
 const JWT_SECRET = process.env.JWT_SECRET;
-const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN;
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '24h';
 const APP_NAME = process.env.APP_NAME;
 
 const router = express.Router();
