@@ -10,7 +10,8 @@ const corsOptions = {
     'http://127.0.0.1:5173', // Alternative localhost port 5173
     'http://127.0.0.1',      // Alternative localhost
     'http://127.0.0.1:80',   // Alternative localhost port 80
-    'http://164.92.147.166:5173' // Remote server for testing
+    'http://164.92.147.166:5173',
+    'http://46.101.181.187:5173' // Remote server for testing
   ],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
