@@ -15,9 +15,11 @@ import { useNavigate } from "react-router-dom";
 import IconButton from '@mui/material/IconButton';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
+import CheckCircle from '@mui/icons-material/CheckCircle';
 import InputAdornment from '@mui/material/InputAdornment';
 import banner from '../../assets/banner.png';
 import apiClient from '../../services/api';
+import { useAuth } from '../../contexts/AuthContext';
 
 const defaultTheme = createTheme({
   palette: {
@@ -32,12 +34,17 @@ const defaultTheme = createTheme({
 
 export default function SignUp() {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [error, setError] = React.useState('');
   const [success, setSuccess] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
   const [showPassword, setShowPassword] = React.useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
+  const [passwordMatch, setPasswordMatch] = React.useState(true);
+  const [passwordsMatchConfirmed, setPasswordsMatchConfirmed] = React.useState(false);
 
   const handleClickShowPassword = () => setShowPassword((show) => !show);
+  const handleClickShowConfirmPassword = () => setShowConfirmPassword((show) => !show);
   
   const handleMouseDownPassword = (event) => {
     event.preventDefault();
@@ -55,10 +62,11 @@ export default function SignUp() {
       lastName: data.get('lastName'),
       email: data.get('email'),
       password: data.get('password'),
+      confirmPassword: data.get('confirmPassword'),
     };
 
     // Validate inputs
-    if (!details.firstName || !details.lastName || !details.email || !details.password) {
+    if (!details.firstName || !details.lastName || !details.email || !details.password || !details.confirmPassword) {
       setError('Please fill in all fields');
       setLoading(false);
       return;
@@ -70,11 +78,29 @@ export default function SignUp() {
       return;
     }
 
+    if (details.password !== details.confirmPassword) {
+      setError('Passwords do not match');
+      setPasswordMatch(false);
+      setLoading(false);
+      return;
+    }
+
     try {
-      await apiClient.post('/signup', details);
-      setSuccess(true);
-      // Wait for 2 seconds to show success message before redirecting
-      navigate('/signin', { state: { message: 'Registration successful! Please sign in.' } });
+      // Remove confirmPassword from the request to backend
+      const { confirmPassword, ...signupData } = details;
+      const response = await apiClient.post('/signup', signupData);
+      
+      // Auto-login after successful signup
+      if (response.data && response.data.data && response.data.user) {
+        login(response.data.data, response.data.user);
+        setSuccess(true);
+        // Redirect to movies page after successful signup and auto-login
+        setTimeout(() => {
+          navigate('/movies', { replace: true });
+        }, 1500);
+      } else {
+        throw new Error('Invalid response from server');
+      }
     } catch (err) {
       setError(err.response?.data?.error?.message || 'Registration failed. Please try again.');
       console.error('Signup error:', err);
@@ -83,9 +109,33 @@ export default function SignUp() {
     }
   };
 
-  const handleInputChange = () => {
+  const handleInputChange = (event) => {
     setError('');
     setSuccess(false);
+    setPasswordMatch(true);
+    setPasswordsMatchConfirmed(false);
+    
+    // Check password match in real-time
+    if (event.target.name === 'password' || event.target.name === 'confirmPassword') {
+      const form = event.target.closest('form');
+      if (form) {
+        const password = form.querySelector('input[name="password"]')?.value;
+        const confirmPassword = form.querySelector('input[name="confirmPassword"]')?.value;
+        
+        if (password && confirmPassword) {
+          if (password === confirmPassword) {
+            setPasswordMatch(true);
+            setPasswordsMatchConfirmed(true);
+          } else {
+            setPasswordMatch(false);
+            setPasswordsMatchConfirmed(false);
+          }
+        } else {
+          setPasswordMatch(true);
+          setPasswordsMatchConfirmed(false);
+        }
+      }
+    }
   };
 
   return (
@@ -204,7 +254,7 @@ export default function SignUp() {
                   id="signup-password"
                   autoComplete="new-password"
                   onChange={handleInputChange}
-                  error={!!error}
+                  error={!!error || !passwordMatch}
                   helperText="Password must be at least 6 characters"
                   disabled={success}
                   InputProps={{
@@ -225,6 +275,52 @@ export default function SignUp() {
                   }}
                 />
               </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  required
+                  fullWidth
+                  name="confirmPassword"
+                  label="Confirm Password"
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  id="signup-confirm-password"
+                  autoComplete="new-password"
+                  onChange={handleInputChange}
+                  error={!!error || (!passwordMatch && passwordsMatchConfirmed === false)}
+                  helperText={
+                    !passwordMatch && passwordsMatchConfirmed === false 
+                      ? "Passwords do not match" 
+                      : passwordsMatchConfirmed 
+                        ? "✓ Passwords match!" 
+                        : "Re-enter your password"
+                  }
+                  disabled={success}
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        {passwordsMatchConfirmed && (
+                          <CheckCircle 
+                            sx={{ 
+                              color: 'success.main', 
+                              mr: 1,
+                              fontSize: 20
+                            }} 
+                          />
+                        )}
+                        <IconButton
+                          aria-label="toggle confirm password visibility"
+                          onClick={handleClickShowConfirmPassword}
+                          onMouseDown={handleMouseDownPassword}
+                          disabled={success}
+                          edge="end"
+                          id="signup-confirm-password-toggle"
+                        >
+                          {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+              </Grid>
               {error && (
                 <Grid item xs={12}>
                   <Typography color="error" variant="body2" id="signup-error">
@@ -235,7 +331,7 @@ export default function SignUp() {
               {success && (
                 <Grid item xs={12}>
                   <Alert severity="success" id="signup-success">
-                    Registration successful! Redirecting to login...
+                    Registration successful! You're now logged in. Redirecting to movies...
                   </Alert>
                 </Grid>
               )}
@@ -253,10 +349,10 @@ export default function SignUp() {
                   background: 'linear-gradient(45deg, #b54d2c 30%, #c45d3c 90%)',
                 }
               }}
-              disabled={loading || success}
+              disabled={loading || success || !passwordMatch}
               id="signup-submit"
             >
-              {loading ? 'Signing up...' : 'Sign Up'}
+              {loading ? 'Signing up...' : !passwordMatch ? 'Passwords must match' : passwordsMatchConfirmed ? 'Ready to Sign Up!' : 'Sign Up'}
             </Button>
             <Grid container justifyContent="center">
               <Grid item>

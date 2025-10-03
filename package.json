@@ -1,7 +1,8 @@
 {
-  "name": "theeyeball-fe",
+  "name": "the-eye-ball-frontend",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
+  "description": "The Eye Ball - Intelligent Movie Discovery Platform",
   "type": "module",
   "scripts": {
     "dev": "vite",
