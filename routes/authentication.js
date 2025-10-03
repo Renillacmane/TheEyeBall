@@ -16,26 +16,41 @@ router.post('/signup',
       passport.authenticate('signup',
       { session: false }),
       async (req, res, next) => {
-          const { firstName, lastName } = req.body;
-          const email = req.user.email;
-          
-          if (!firstName || !lastName) {
-            throw new ValidationError('First name and last name are required');
-          }
+          try {
+            const { firstName, lastName } = req.body;
+            const email = req.user.email;
+            
+            if (!firstName || !lastName) {
+              throw new ValidationError('First name and last name are required');
+            }
 
-          const user = await UserModel.findOne({ email });
-          user.firstName = firstName;
-          user.lastName = lastName;
-          await user.save();
-          
-          res.json({
-            message: 'Signup successful',
-            user: {
+            const user = await UserModel.findOne({ email });
+            user.firstName = firstName;
+            user.lastName = lastName;
+            await user.save();
+            
+            // Generate JWT token for auto-login after signup
+            const body = { 
+              _id: user._id, 
               email: user.email,
               firstName: user.firstName,
               lastName: user.lastName
-            }
-          });
+            };
+            
+            const token = await promisify(jwt.sign)(
+              { user: body },
+              JWT_SECRET,
+              { expiresIn: JWT_EXPIRES_IN, issuer: APP_NAME }
+            );
+            
+            res.json({
+              message: 'Signup successful',
+              data: token,
+              user: body
+            });
+          } catch (error) {
+            return next(error);
+          }
       }) 
 ;
 
