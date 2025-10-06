@@ -1,0 +1,40 @@
+# TheEyeBall-BE Backend Dockerfile
+# Multi-stage build for Node.js application (dev and production)
+
+FROM node:18-alpine
+
+# Accept build arguments
+ARG NODE_ENV=production
+
+# No build dependencies needed for pure JavaScript modules
+
+# Set working directory
+WORKDIR /app
+
+# Install nodemon globally for development
+RUN npm install -g nodemon
+
+# Copy package files
+COPY TheEyeBall-BE/package*.json ./
+
+# Install dependencies based on environment
+RUN if [ "$NODE_ENV" = "production" ]; then \
+        npm ci --only=production && npm cache clean --force; \
+    else \
+        npm install; \
+    fi
+
+# Copy application code
+COPY TheEyeBall-BE/ ./
+
+# Copy environment configuration
+COPY configs/backend/env.template ./.env
+
+# Create logs directory
+RUN mkdir -p logs
+
+# Expose port
+EXPOSE 3000
+
+# Start the application based on environment
+CMD if [ "$NODE_ENV" = "production" ]; then npm start; else npm run dev; fi

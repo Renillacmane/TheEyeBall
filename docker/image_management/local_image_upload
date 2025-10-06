@@ -1,0 +1,80 @@
+# TheEyeBall-BE Docker Image Management Commands
+# Commands to save, transfer, and load Docker images without a registry
+
+## Current Image Names
+# Backend:  docker-backend:latest    (~262MB)
+# Frontend: docker-frontend:latest   (~83MB)
+# attention build for the right platform ex: 
+# docker build --platform linux/amd64 -f docker/Dockerfile.backend -t docker-backend:latest .
+
+## 1. SAVE IMAGES TO TAR FILES
+
+
+# Create images directory first (if it doesn't exist)
+mkdir -p docker/image_management/images
+
+# Export backend image
+docker save -o docker/image_management/images/theeyeball-backend.tar docker-backend:latest
+
+# Export frontend image  
+docker save -o docker/image_management/images/theeyeball-frontend.tar docker-frontend:latest
+
+## 2. TRANSFER IMAGES TO SERVER
+# Using SCP (replace user@server with your server details)
+scp docker/image_management/images/theeyeball-backend.tar user@server:/path/to/destination/
+scp docker/image_management/images/theeyeball-frontend.tar user@server:/path/to/destination/
+
+# Using RSYNC (recommended for large files)
+rsync -avz --progress docker/image_management/images/theeyeball-backend.tar user@server:/path/to/destination/
+rsync -avz --progress docker/image_management/images/theeyeball-frontend.tar user@server:/path/to/destination/
+
+# Using regular copy (if on same machine)
+cp docker/image_management/images/*.tar /path/to/destination/
+
+## 3. LOAD IMAGES ON DESTINATION SERVER
+# Load backend image
+docker load -i /path/to/destination/theeyeball-backend.tar
+
+# Load frontend image
+docker load -i /path/to/destination/theeyeball-frontend.tar
+
+## 4. VERIFY IMAGES ARE LOADED
+# Check that images are available
+docker images | grep -E "(docker-backend|docker-frontend)"
+
+## 5. RUN APPLICATION ON DESTINATION SERVER
+# Start the application (make sure docker-compose.yml is available)
+docker-compose -f docker/docker-compose.yml up -d
+
+## 6. CLEANUP (OPTIONAL)
+# Remove tar files after successful deployment
+rm docker/image_management/images/*.tar
+
+## EXAMPLE WORKFLOW
+# 1. Build images locally:
+#    docker-compose -f docker/docker-compose.yml build
+
+# 2. Save images:
+#    mkdir -p docker/image_management/images
+#    docker save -o docker/image_management/images/theeyeball-backend.tar docker-backend:latest
+#    docker save -o docker/image_management/images/theeyeball-frontend.tar docker-frontend:latest
+
+# 3. Transfer to server:
+#    scp docker/image_management/images/*.tar user@server:/home/user/
+
+# 4. On server, load images:
+#    docker load -i /home/user/theeyeball-backend.tar
+#    docker load -i /home/user/theeyeball-frontend.tar
+
+# 5. Copy project files to server and run:
+#    scp -r docker/ user@server:/path/to/project/
+#    scp -r TheEyeBall-BE/ user@server:/path/to/project/
+#    scp -r configs/ user@server:/path/to/project/
+#    docker-compose -f docker/docker-compose.yml up -d
+
+## NOTES
+# - Replace 'user@server' with your actual server credentials
+# - Replace '/path/to/destination/' with your actual destination path
+# - Make sure Docker and docker-compose are installed on the destination server
+# - The tar files will be large (~262MB + ~83MB = ~345MB total)
+# - Consider using rsync for better transfer reliability with large files

@@ -1,0 +1,127 @@
+# TheEyeBall Project Rules
+
+## Project Overview
+TheEyeBall is an intelligent movie discovery platform with Node.js/Express backend and React frontend using Material-UI. The platform features sophisticated recommendation algorithms, community-driven insights, and personalized movie discovery.
+
+## Core Architecture Patterns
+- **Service Layer Pattern**: Keep business logic in services/, routes should be thin controllers
+- **Repository Pattern**: Use Mongoose ODM for MongoDB operations with clear model separation
+- **Middleware Chain**: Authentication, CORS, error handling, and security middleware
+- **Provider/Adapter Pattern**: TMDB service abstraction with data transformation
+- **Component Composition**: Reusable React components with prop-based customization
+- **Context Provider Pattern**: Global state management with React Context API
+- **Optimistic UI Updates**: Immediate frontend feedback with background server sync
+
+## Technology Stack
+- **Backend**: Node.js, Express.js, MongoDB, Mongoose, Passport.js, JWT, Axios, BCrypt
+- **Frontend**: React 18, Material-UI, Vite, React Router, Axios, Emotion
+- **External Services**: TMDB API integration
+- **Security**: Helmet, CORS, Rate Limiting, JWT authentication
+- **Development**: Nodemon, ESLint, Prettier, Hot Module Replacement
+
+## Code Standards & Conventions
+- **Naming**: camelCase for variables/functions, PascalCase for React components, kebab-case for files
+- **Async/Await**: Prefer async/await over promises and callbacks
+- **Error Handling**: Comprehensive try-catch blocks with meaningful error messages
+- **JSDoc**: Document complex functions and API endpoints
+- **Environment Variables**: Use .env files, never hardcode sensitive data
+- **Import Organization**: Group imports (external, internal, relative)
+
+## Security Requirements
+- **Input Validation**: Always validate and sanitize user inputs
+- **Authentication**: JWT-based stateless authentication with Passport.js
+- **Authorization**: Protected routes with proper middleware checks
+- **Password Security**: BCrypt hashing with appropriate salt rounds
+- **Environment Security**: Sensitive data in environment variables only
+- **CORS Configuration**: Proper cross-origin request handling
+- **Rate Limiting**: API abuse prevention with express-rate-limit
+
+## Performance Guidelines
+- **Database Optimization**: Use indexes for frequent queries, limit response sizes
+- **API Efficiency**: Limit TMDB API calls, implement response caching where appropriate
+- **Frontend Performance**: Optimistic updates, lazy loading, Material-UI optimization
+- **Memory Management**: Proper cleanup of event listeners and subscriptions
+- **Query Optimization**: Efficient MongoDB queries with proper projection
+
+## Data Models & Relationships
+- **User Model**: Embedded genre preferences with percentage calculations
+- **Community Analytics**: Separate CommunityGenres collection for aggregate statistics
+- **Movie Integration**: TMDB data enrichment with local user reactions
+- **Reaction System**: UserReaction model for like/unlike functionality
+- **Genre Intelligence**: Real-time preference updates with hybrid weighting
+
+## Testing Approach
+- **Unit Tests**: Test services and utility functions
+- **Integration Tests**: Test API endpoints and database operations
+- **Component Tests**: React Testing Library for UI components
+- **Mocking**: Mock external API calls (TMDB) in tests
+- **Coverage**: Aim for meaningful test coverage of critical paths
+
+## Documentation Standards
+- **Memory Bank**: Update activeContext.md, productContext.md when making significant changes
+- **README Files**: Keep setup instructions current and comprehensive
+- **Environment Templates**: Maintain detailed .env.template files
+- **API Documentation**: Document new endpoints and their parameters
+- **Commit Messages**: Use clear, descriptive commit messages
+
+## AI Assistance Guidelines
+
+### Change Scope & Focus
+- **Concise Changes**: Suggest only changes directly related to the problem being solved
+- **Avoid Over-Engineering**: Don't suggest unnecessary refactoring or architectural changes
+- **Minimal Impact**: Prefer small, focused changes over large modifications
+- **Problem-Specific**: Address the specific issue without changing unrelated code
+
+### Code Reuse & Existing Solutions
+- **Check Existing Code**: Always search for similar solutions before suggesting new implementations
+- **Reuse Patterns**: Leverage existing patterns, utilities, and components when possible
+- **Permission to Modify**: Ask permission before altering existing solutions vs creating new ones
+- **Consistency**: Maintain consistency with existing codebase patterns and conventions
+
+### Solution Validation
+- **Existing Solutions First**: Check if similar functionality already exists in the codebase
+- **Pattern Matching**: Follow established patterns in the project (service layer, component structure, etc.)
+- **Incremental Changes**: Suggest incremental improvements rather than complete rewrites
+- **Context Awareness**: Consider the broader system impact of suggested changes
+
+## Project-Specific Patterns
+
+### Backend Patterns
+- **Service Layer**: Business logic in services/moviesService.js, services/genreService.js
+- **Model Enrichment**: Combine TMDB data with local user data (reactions, preferences)
+- **Error Middleware**: Centralized error handling with custom error types
+- **Authentication Flow**: JWT strategy with Passport.js for protected routes
+
+### Frontend Patterns
+- **Material-UI Components**: Use consistent Material-UI design system
+- **Protected Routes**: Authentication guards with React Router
+- **Context State**: Global authentication state with AuthContext
+- **Optimistic Updates**: Immediate UI feedback for user interactions
+- **Component Composition**: Reusable components (MovieCard, MovieModal, Header, Footer)
+
+### Recommendation Algorithm
+- **Weight-Based Scoring**: Multi-factor algorithm (popularity, release date, genres, community)
+- **Hybrid Preferences**: 70% user preferences + 30% community trends
+- **Real-Time Updates**: Genre preferences update on user interactions
+- **Performance Optimization**: Efficient filtering and sorting of recommendations
+
+## File Organization
+- **Backend**: routes/, services/, models/, middleware/, providers/, utils/
+- **Frontend**: components/, layouts/, pages/, contexts/, services/, utils/
+- **Configuration**: configs/backend/, configs/frontend/, docker/, deploy/
+- **Documentation**: documentation/, memory-bank/
+
+## Environment Configuration
+- **Development**: Local development with hot reload and debugging
+- **Production**: Optimized builds, security hardening, performance monitoring
+- **Docker**: Containerized deployment with environment variable management
+- **External APIs**: TMDB API integration with proper error handling and rate limiting
+
+## Quality Assurance
+- **Code Review**: Ensure changes follow established patterns and standards
+- **Error Handling**: Comprehensive error handling with user-friendly messages
+- **Security Review**: Validate security implications of any changes
+- **Performance Impact**: Consider performance implications of modifications
+- **Documentation Updates**: Update relevant documentation when making changes
+
+Remember: The goal is to maintain a high-quality, consistent, and maintainable codebase while solving specific problems efficiently and effectively.

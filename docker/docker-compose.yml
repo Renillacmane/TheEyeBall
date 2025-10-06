@@ -1,0 +1,126 @@
+# TheEyeBall-BE Docker Compose Configuration
+# For local development and production deployment
+
+services:
+  # Backend API
+  backend:
+    image: docker-backend:latest
+    #build:
+    #  context: ..
+    #  dockerfile: docker/Dockerfile.backend
+    #  args:
+    #    - NODE_ENV=${NODE_ENV:-production}
+    container_name: theeyeball-backend
+    restart: unless-stopped
+    #env_file:
+    #  - ../configs/backend/.env
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      PORT: ${BACKEND_PORT:-3000}
+    ports:
+      - "${BACKEND_PORT:-3000}:${BACKEND_PORT:-3000}"
+    #depends_on:
+     # mongodb:
+     #   condition: service_healthy
+    networks:
+      - theeyeball-network
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get(`http://127.0.0.1:$${process.env.PORT || 3000}/health`, (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Frontend Application
+  frontend:
+    image: docker-frontend:latest
+    #build:
+    #  context: ..
+    #  dockerfile: docker/Dockerfile.frontend
+    container_name: theeyeball-frontend
+    restart: unless-stopped
+    ports:
+      - "5173:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - theeyeball-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Nginx Reverse Proxy (for production)
+  nginx:
+    image: nginx:alpine
+    container_name: theeyeball-nginx
+    restart: unless-stopped
+    ports:
+      - "443:443"
+      - "8080:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./deploy/ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - theeyeball-network
+    #profiles:
+    #  - production
+
+  # MongoDB Database
+  # mongodb:
+  #   image: mongo:7.0
+  #   container_name: theeyeball-mongodb
+  #   restart: unless-stopped
+  #   environment:
+  #     MONGO_INITDB_ROOT_USERNAME: ${DB_USER:-admin}
+  #     MONGO_INITDB_ROOT_PASSWORD: ${DB_PWD:-password}
+  #     MONGO_INITDB_DATABASE: theeyeball
+  #   ports:
+  #     - "27017:27017"
+  #   volumes:
+  #     - mongodb_data:/data/db
+  #     - ./docker/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+  #   networks:
+  #     - theeyeball-network
+  #   healthcheck:
+  #     test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
+  #     start_period: 40s
+
+  # Redis Cache (optional, for future use)
+  # redis:
+  #   image: redis:7-alpine
+  #   container_name: theeyeball-redis
+  #   restart: unless-stopped
+  #   ports:
+  #     - "6379:6379"
+  #   volumes:
+  #     - redis_data:/data
+  #   networks:
+  #     - theeyeball-network
+  #   healthcheck:
+  #     test: ["CMD", "redis-cli", "ping"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
+
+  
+
+# Networks
+networks:
+  theeyeball-network:
+    driver: bridge
+
+# Volumes
+# volumes:
+#   mongodb_data:
+#     driver: local
+#   redis_data:
+#    driver: local
