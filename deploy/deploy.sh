@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# TheEyeBall-BE Production Deployment Script
+# TheEyeBall Production Deployment Script
 # Automated deployment script for production server
 
 set -e  # Exit on any error
@@ -101,12 +101,12 @@ install_dependencies() {
     cd "$APP_PATH"
     
     # Backend dependencies
-    cd TheEyeBall-BE
+    cd backend
     npm ci --production
     success "Backend dependencies installed"
     
     # Frontend dependencies and build
-    cd ../TheEyeBall-FE
+    cd ../frontend
     npm ci
     npm run build
     success "Frontend built successfully"
@@ -229,7 +229,7 @@ cleanup_backups() {
 
 # Main deployment function
 main() {
-    log "Starting TheEyeBall-BE deployment..."
+    log "Starting TheEyeBall deployment..."
     
     check_requirements
     backup_current

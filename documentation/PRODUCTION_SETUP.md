@@ -1,4 +1,4 @@
-# TheEyeBall-BE Production Setup Complete ✅
+# TheEyeBall Production Setup Complete ✅
 
 ## What We've Accomplished
 
@@ -46,11 +46,11 @@
 │   └── frontend/
 │       ├── .env                  # Frontend environment variables
 │       └── env.template          # Frontend environment template
-├── TheEyeBall-BE/                   # Backend API
+├── backend/                   # Backend API
 │   ├── database/init.js          # Enhanced database config
 │   ├── middleware/security.js    # Improved security config
 │   └── routes/index.js           # Added health check endpoint
-├── TheEyeBall-FE/                # Frontend Application
+├── frontend/                # Frontend Application
 ├── docker/                       # Docker Configuration
 │   ├── Dockerfile.backend        # Unified backend build
 │   ├── Dockerfile.frontend       # Unified frontend build
@@ -143,4 +143,4 @@
 - **Updates**: Use the deployment script for seamless updates
 - **Backups**: Automated backup system included in deployment script
 
-TheEyeBall-BE is now **production-ready** with enterprise-grade configuration, security, and deployment capabilities! 🚀
+TheEyeBall is now **production-ready** with enterprise-grade configuration, security, and deployment capabilities! 🚀

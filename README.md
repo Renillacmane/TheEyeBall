@@ -1,0 +1,14 @@
+# TheEyeBall
+
+# how to run
+
+npm run dev
+
+# token 24 horas
+
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7Il9pZCI6IjY2OTc5ODcyMWY2MmI3OTQ0NTcxNTg4NiIsImVtYWlsIjoici5sYWNtYW5lMTdAcnVudGltZS1yZXZvbHV0aW9uLmNvbSJ9LCJpYXQiOjE3MjEyMTEwNDksImV4cCI6MTcyMTIxNDY0OSwiaXNzIjoiVGhlIEV5ZWJhbGwifQ.jdtb5AhNTMzZJ1NJRiHNVT56lchT7LjUlSt-RPOat4U
+
+
+
+User
+r.lacmane15@runtime-revolution.com

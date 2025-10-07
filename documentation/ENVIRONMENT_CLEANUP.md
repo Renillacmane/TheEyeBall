@@ -27,8 +27,8 @@ You were absolutely right! The root `.env` file was confusing and unnecessary. I
 │   └── frontend/
 │       ├── .env              # Frontend environment
 │       └── env.template      # Frontend environment template
-├── TheEyeBall-BE/               # Backend application
-└── TheEyeBall-FE/            # Frontend application
+├── backend/               # Backend application
+└── frontend/            # Frontend application
 ```
 
 ### **Docker Compose Configuration**:
@@ -138,4 +138,4 @@ The environment configuration is now **much cleaner and simpler**:
 - ✅ **Simple Docker** configuration
 - ✅ **Updated documentation** reflecting the changes
 
-**TheEyeBall-BE now has a clean, maintainable environment configuration!** 🎯
+**TheEyeBall now has a clean, maintainable environment configuration!** 🎯

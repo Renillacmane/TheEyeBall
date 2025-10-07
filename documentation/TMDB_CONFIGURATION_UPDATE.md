@@ -24,7 +24,7 @@ PATH_TOP_RATED=/movie/top_rated
 ```bash
 # Frontend Configuration
 VITE_BE_ADDRESS=http://localhost:3000
-VITE_APP_NAME=TheEyeBall-BE
+VITE_APP_NAME=TheEyeBall
 VITE_APP_VERSION=1.0.0
 VITE_NODE_ENV=production
 VITE_TMDB_IMAGE_BASE_URL=https://image.tmdb.org/t/p
@@ -168,7 +168,7 @@ PATH_TOP_RATED=/movie/top_rated
 
 ### **3. Test Configuration**:
 ```bash
-cd TheEyeBall-BE
+cd backend
 npm start
 
 # Check logs for successful API calls

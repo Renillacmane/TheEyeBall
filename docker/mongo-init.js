@@ -1,4 +1,4 @@
-// MongoDB initialization script for TheEyeBall-BE
+// MongoDB initialization script for TheEyeBall
 // Creates the application database and user
 
 // Switch to the application database
@@ -58,4 +58,4 @@ db.movies.createIndex({ id_external: 1 }, { unique: true });
 db.userreactions.createIndex({ id_user: 1, id_movie: 1 }, { unique: true });
 db.communitygenres.createIndex({ genre_id: 1 }, { unique: true });
 
-print('TheEyeBall-BE database initialized successfully!');
+print('TheEyeBall database initialized successfully!');

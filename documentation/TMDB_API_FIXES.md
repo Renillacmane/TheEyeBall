@@ -102,7 +102,7 @@ TMDB_BASE_URL=https://api.themoviedb.org/3
 **Frontend (configs/frontend/.env)**:
 ```bash
 VITE_BE_ADDRESS=http://localhost:3000
-VITE_APP_NAME=TheEyeBall-BE
+VITE_APP_NAME=TheEyeBall
 VITE_TMDB_IMAGE_BASE_URL=https://image.tmdb.org/t/p
 ```
 
@@ -143,7 +143,7 @@ nano configs/backend/.env
 ### **2. Test API Connection**
 ```bash
 # Start the backend
-cd TheEyeBall-BE
+cd backend
 npm start
 
 # Check logs for successful TMDB calls
@@ -257,4 +257,4 @@ The TMDB API integration is now **fully functional** with:
 - ✅ **Docker compatibility** with proper environment variable passing
 - ✅ **Production readiness** with robust error handling
 
-**TheEyeBall-BE can now successfully fetch movie data from TMDB!** 🎬
+**TheEyeBall can now successfully fetch movie data from TMDB!** 🎬

@@ -1,4 +1,4 @@
-# TheEyeBall-BE Docker Compose Configuration
+# TheEyeBall Docker Compose Configuration
 # For local development and production deployment
 
 services:

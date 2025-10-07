@@ -1,4 +1,4 @@
-# TheEyeBall-BE Backend Dockerfile
+# TheEyeBall Backend Dockerfile
 # Multi-stage build for Node.js application (dev and production)
 
 FROM node:18-alpine
@@ -15,7 +15,7 @@ WORKDIR /app
 RUN npm install -g nodemon
 
 # Copy package files
-COPY TheEyeBall-BE/package*.json ./
+COPY backend/package*.json ./
 
 # Install dependencies based on environment
 RUN if [ "$NODE_ENV" = "production" ]; then \
@@ -25,7 +25,7 @@ RUN if [ "$NODE_ENV" = "production" ]; then \
     fi
 
 # Copy application code
-COPY TheEyeBall-BE/ ./
+COPY backend/ ./
 
 # Copy environment configuration
 COPY configs/backend/env.template ./.env

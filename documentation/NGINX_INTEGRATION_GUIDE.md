@@ -1,6 +1,6 @@
 # Nginx Integration Guide
 
-This guide explains how to integrate TheEyeBall-BE with your existing nginx server instead of using the Docker nginx service.
+This guide explains how to integrate TheEyeBall with your existing nginx server instead of using the Docker nginx service.
 
 ## Why Use Existing Nginx?
 
@@ -65,7 +65,7 @@ The frontend needs to be built and served by your nginx:
 
 ```bash
 # Build the frontend
-cd TheEyeBall-FE
+cd frontend
 npm run build
 
 # Copy to nginx web root (adjust path as needed)

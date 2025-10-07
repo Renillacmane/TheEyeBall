@@ -1,4 +1,4 @@
-# TheEyeBall-BE Docker Image Management Commands
+# TheEyeBall Docker Image Management Commands
 # Commands to save, transfer, and load Docker images without a registry
 
 ## Current Image Names
@@ -68,7 +68,7 @@ rm docker/image_management/images/*.tar
 
 # 5. Copy project files to server and run:
 #    scp -r docker/ user@server:/path/to/project/
-#    scp -r TheEyeBall-BE/ user@server:/path/to/project/
+#    scp -r backend/ user@server:/path/to/project/
 #    scp -r configs/ user@server:/path/to/project/
 #    docker-compose -f docker/docker-compose.yml up -d
 

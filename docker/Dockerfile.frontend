@@ -1,4 +1,4 @@
-# TheEyeBall-BE Frontend Dockerfile
+# TheEyeBall Frontend Dockerfile
 # Multi-stage build for production optimization
 
 # Stage 1: Build stage
@@ -10,13 +10,13 @@ FROM node:18-alpine AS builder
 WORKDIR /app
 
 # Copy package files
-COPY TheEyeBall-FE/package*.json ./
+COPY frontend/package*.json ./
 
 # Install dependencies
 RUN npm ci && npm cache clean --force
 
 # Copy source code
-COPY TheEyeBall-FE/ ./
+COPY frontend/ ./
 
 # Copy environment configuration
 COPY configs/frontend/env.template ./.env

@@ -1,6 +1,6 @@
-# TheEyeBall-BE Production Deployment
+# TheEyeBall Production Deployment
 
-This directory contains all the necessary files for deploying TheEyeBall-BE to a production server.
+This directory contains all the necessary files for deploying TheEyeBall to a production server.
 
 ## Files Overview
 
@@ -36,8 +36,8 @@ This directory contains all the necessary files for deploying TheEyeBall-BE to a
 
 2. **Set up environment variables:**
    ```bash
-   cp TheEyeBall-BE/env.template TheEyeBall-BE/.env
-   cp TheEyeBall-FE/env.template TheEyeBall-FE/.env
+   cp backend/env.template backend/.env
+   cp frontend/env.template frontend/.env
    # Edit the .env files with your actual values
    ```
 
@@ -67,11 +67,11 @@ cd /var/www/theeyeball
 ### 2. Install Dependencies
 ```bash
 # Backend
-cd TheEyeBall-BE
+cd backend
 npm ci --production
 
 # Frontend
-cd ../TheEyeBall-FE
+cd ../frontend
 npm ci
 npm run build
 ```
@@ -128,7 +128,7 @@ sudo certbot --nginx -d your-domain.com -d www.your-domain.com
 NODE_ENV=production
 PORT=3000
 JWT_SECRET=your-super-secure-jwt-secret-key
-APP_NAME=TheEyeBall-BE
+APP_NAME=TheEyeBall
 MONGODB_URI=mongodb://username:password@localhost:27017/theeyeball
 TMDB_API_KEY=your-tmdb-api-key
 DEBUG_PRINT=false
@@ -138,7 +138,7 @@ LOG_LEVEL=info
 ### Frontend (.env)
 ```bash
 VITE_BE_ADDRESS=https://your-api-domain.com
-VITE_APP_NAME=TheEyeBall-BE-BE
+VITE_APP_NAME=TheEyeBall
 VITE_NODE_ENV=production
 ```
 

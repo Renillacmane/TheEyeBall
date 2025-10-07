@@ -1,8 +1,8 @@
-# TheEyeBall-BE Environment Configuration Guide
+# TheEyeBall Environment Configuration Guide
 
 ## Overview
 
-TheEyeBall-BE uses a **simple environment configuration system** with separate `.env` files for each service:
+TheEyeBall uses a **simple environment configuration system** with separate `.env` files for each service:
 
 1. **Backend `.env`** - Backend-specific configuration
 2. **Frontend `.env`** - Frontend-specific configuration
@@ -18,8 +18,8 @@ TheEyeBall-BE uses a **simple environment configuration system** with separate `
 │   └── frontend/
 │       ├── .env              # Frontend environment
 │       └── env.template      # Frontend environment template
-├── TheEyeBall-BE/               # Backend application
-└── TheEyeBall-FE/            # Frontend application
+├── backend/               # Backend application
+└── frontend/            # Frontend application
 ```
 
 ## 1. Backend Environment File (`configs/backend/.env`)
@@ -66,7 +66,7 @@ nano .env
 **Key Variables**:
 ```bash
 VITE_BE_ADDRESS=http://localhost:3000
-VITE_APP_NAME=TheEyeBall-BE
+VITE_APP_NAME=TheEyeBall
 VITE_APP_VERSION=1.0.0
 VITE_NODE_ENV=production
 VITE_TMDB_IMAGE_BASE_URL=https://image.tmdb.org/t/p
@@ -117,7 +117,7 @@ RUN npm run build 2>/dev/null || echo "No build script found, skipping..."
 ```dockerfile
 # Accept Vite environment variables as build arguments
 ARG VITE_BE_ADDRESS=http://localhost:3000
-ARG VITE_APP_NAME=TheEyeBall-BE
+ARG VITE_APP_NAME=TheEyeBall
 
 # Set as environment variables for build
 ENV VITE_BE_ADDRESS=$VITE_BE_ADDRESS
@@ -158,8 +158,8 @@ nano configs/frontend/.env  # Edit with your values
 docker-compose -f docker/docker-compose.yml up -d
 
 # Or run locally
-cd TheEyeBall-BE && npm run dev
-cd TheEyeBall-FE && npm run dev
+cd backend && npm run dev
+cd frontend && npm run dev
 ```
 
 ### 3. Production Setup
@@ -258,4 +258,4 @@ LOG_LEVEL=warn
 VITE_BE_ADDRESS=https://api.yourdomain.com
 ```
 
-This hierarchical environment system provides flexibility, security, and maintainability for TheEyeBall-BE across different deployment scenarios.
+This hierarchical environment system provides flexibility, security, and maintainability for TheEyeBall across different deployment scenarios.

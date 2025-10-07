@@ -42,7 +42,7 @@ environment:
 services:
   backend:
     env_file:
-      - ../TheEyeBall-BE/.env          # Loads: JWT_SECRET, MONGODB_URI, TMDB_API_KEY
+      - ../backend/.env          # Loads: JWT_SECRET, MONGODB_URI, TMDB_API_KEY
     environment:
       NODE_ENV: ${NODE_ENV:-production}  # Overrides NODE_ENV from .env if set
       PORT: 3000                          # Docker-specific port setting
@@ -75,13 +75,13 @@ env_file:
   - ../configs/frontend/.env        # Service configuration
 environment:
   VITE_BE_ADDRESS: ${VITE_BE_ADDRESS:-http://localhost:3000}
-  VITE_APP_NAME: ${VITE_APP_NAME:-TheEyeBall-BE}
+  VITE_APP_NAME: ${VITE_APP_NAME:-TheEyeBall}
   VITE_NODE_ENV: ${NODE_ENV:-production}
 ```
 
 **From `.env` file**:
 - `VITE_BE_ADDRESS=http://localhost:3000`
-- `VITE_APP_NAME=TheEyeBall-BE`
+- `VITE_APP_NAME=TheEyeBall`
 - `VITE_TMDB_IMAGE_BASE_URL=https://image.tmdb.org/t/p`
 
 **From `environment`**:

@@ -1,4 +1,4 @@
-// PM2 Ecosystem configuration for TheEyeBall-BE
+// PM2 Ecosystem configuration for TheEyeBall
 // Process management for production deployment
 
 module.exports = {
@@ -6,7 +6,7 @@ module.exports = {
     {
       name: 'theeyeball-backend',
       script: './bin/www',
-      cwd: './TheEyeBall-BE',
+      cwd: './backend',
       instances: 'max', // Use all available CPU cores
       exec_mode: 'cluster',
       
