@@ -40,7 +40,7 @@ if (!TMDB_API_KEY) {
 **❌ Before (Broken)**:
 ```javascript
 // Used undefined environment variables:
-const url = `${process.env.HOSTNAME}/${process.env.API_VERSION}${process.env.PATH_UPCOMING_MOVIE}`;
+const url = `${process.env.TMDB_HOST}/${process.env.API_VERSION}${process.env.PATH_UPCOMING_MOVIE}`;
 // Result: "undefined/undefined/undefined" → Invalid URL
 ```
 

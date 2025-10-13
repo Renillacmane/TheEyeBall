@@ -13,7 +13,7 @@ TMDB_API_KEY=your-tmdb-api-key-here
 TMDB_BASE_URL=https://api.themoviedb.org/3
 
 # TMDB API Configuration (Resource Paths)
-HOSTNAME=https://api.themoviedb.org
+TMDB_HOST=https://api.themoviedb.org
 API_VERSION=3
 PATH_UPCOMING_MOVIE=/movie/upcoming
 PATH_NOW_PLAYING=/movie/now_playing
@@ -37,7 +37,7 @@ VITE_TMDB_IMAGE_BASE_URL=https://image.tmdb.org/t/p
 // TMDB API Configuration
 const TMDB_BASE_URL = process.env.TMDB_BASE_URL || 'https://api.themoviedb.org/3';
 const TMDB_API_KEY = process.env.TMDB_API_KEY;
-const HOSTNAME = process.env.HOSTNAME || 'https://api.themoviedb.org';
+const TMDB_HOST = process.env.TMDB_HOST || 'https://api.themoviedb.org';
 const API_VERSION = process.env.API_VERSION || '3';
 const PATH_UPCOMING_MOVIE = process.env.PATH_UPCOMING_MOVIE || '/movie/upcoming';
 const PATH_NOW_PLAYING = process.env.PATH_NOW_PLAYING || '/movie/now_playing';
@@ -50,7 +50,7 @@ const PATH_TOP_RATED = process.env.PATH_TOP_RATED || '/movie/top_rated';
 const url = `${TMDB_BASE_URL}/movie/upcoming?api_key=${TMDB_API_KEY}`;
 
 // After: Using resource path variables
-const url = `${HOSTNAME}/${API_VERSION}${PATH_UPCOMING_MOVIE}?api_key=${TMDB_API_KEY}`;
+const url = `${TMDB_HOST}/${API_VERSION}${PATH_UPCOMING_MOVIE}?api_key=${TMDB_API_KEY}`;
 ```
 
 ### **3. All Functions Updated**
@@ -61,11 +61,11 @@ const url = `${HOSTNAME}/${API_VERSION}${PATH_UPCOMING_MOVIE}?api_key=${TMDB_API
 - ✅ `getTopRatedAxios()` - Uses `PATH_TOP_RATED`
 
 **Movie Details Functions**:
-- ✅ `getMovieDetailsAxios()` - Uses `HOSTNAME` + `API_VERSION`
-- ✅ `searchMoviesAxios()` - Uses `HOSTNAME` + `API_VERSION`
-- ✅ `getMovieCreditsAxios()` - Uses `HOSTNAME` + `API_VERSION`
-- ✅ `getMovieImagesAxios()` - Uses `HOSTNAME` + `API_VERSION`
-- ✅ `getMovieVideosAxios()` - Uses `HOSTNAME` + `API_VERSION`
+- ✅ `getMovieDetailsAxios()` - Uses `TMDB_HOST` + `API_VERSION`
+- ✅ `searchMoviesAxios()` - Uses `TMDB_HOST` + `API_VERSION`
+- ✅ `getMovieCreditsAxios()` - Uses `TMDB_HOST` + `API_VERSION`
+- ✅ `getMovieImagesAxios()` - Uses `TMDB_HOST` + `API_VERSION`
+- ✅ `getMovieVideosAxios()` - Uses `TMDB_HOST` + `API_VERSION`
 
 **Legacy Function**:
 - ✅ `getUpcoming()` - Restored to use `PATH_UPCOMING_MOVIE`
@@ -83,8 +83,8 @@ PATH_NOW_PLAYING=/movie/now_playing
 PATH_TOP_RATED=/movie/top_rated
 
 # Easy to change hostname for different environments
-HOSTNAME=https://api.themoviedb.org
-# HOSTNAME=https://api-staging.themoviedb.org
+TMDB_HOST=https://api.themoviedb.org
+# TMDB_HOST=https://api-staging.themoviedb.org
 ```
 
 ### **2. Maintainability**
@@ -121,7 +121,7 @@ https://api.themoviedb.org/3/search/movie?api_key=YOUR_KEY&query=batman
 
 ### **Default Values**:
 ```javascript
-HOSTNAME=https://api.themoviedb.org
+TMDB_HOST=https://api.themoviedb.org
 API_VERSION=3
 PATH_UPCOMING_MOVIE=/movie/upcoming
 PATH_NOW_PLAYING=/movie/now_playing
@@ -139,7 +139,7 @@ PATH_NOW_PLAYING=/movies/now_playing
 PATH_TOP_RATED=/movies/top_rated
 
 # Different hostname
-HOSTNAME=https://api-staging.themoviedb.org
+TMDB_HOST=https://api-staging.themoviedb.org
 ```
 
 ## **Environment Setup**
@@ -159,7 +159,7 @@ nano configs/backend/.env
 TMDB_API_KEY=your-actual-tmdb-api-key-here
 
 # Optional (defaults provided):
-HOSTNAME=https://api.themoviedb.org
+TMDB_HOST=https://api.themoviedb.org
 API_VERSION=3
 PATH_UPCOMING_MOVIE=/movie/upcoming
 PATH_NOW_PLAYING=/movie/now_playing
