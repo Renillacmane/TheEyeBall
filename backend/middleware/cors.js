@@ -13,6 +13,10 @@ const corsOptions = {
     'http://164.92.147.166:5173',
     'http://46.101.181.187:5173',                           // Remote server for testing
 
+
+    'http://0.0.0.0',
+    'https://theeyeball-fe-production.up.railway.app',
+
     'https://theeyeball-production.up.railway.app:3000',    // Railway production domain
     'https://theeyeball-production.up.railway.app/login',   // Railway production domain
     'https://theeyeball-production.up.railway.app',         // Railway production domain

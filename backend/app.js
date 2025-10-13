@@ -27,6 +27,9 @@ const app = express();
 // CORS must come before Helmet to avoid conflicts
 app.use(cors);
 
+// Add explicit OPTIONS handling for preflight requests
+app.options('*', cors);
+
 // Configure Helmet to work with CORS
 app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" },
