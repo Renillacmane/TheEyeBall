@@ -11,7 +11,8 @@ const corsOptions = {
     'http://127.0.0.1',      // Alternative localhost
     'http://127.0.0.1:80',   // Alternative localhost port 80
     'http://164.92.147.166:5173',
-    'http://46.101.181.187:5173' // Remote server for testing
+    'http://46.101.181.187:5173', // Remote server for testing
+    'https://theeyeball-production.up.railway.app'
   ],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
