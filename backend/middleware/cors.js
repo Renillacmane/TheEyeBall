@@ -1,27 +1,62 @@
 const cors = require('cors');
 
-// CORS middleware configuration
-// Allow specific origins in production, all origins in development
+/**
+ * CORS middleware configuration
+ * Standard approach: Use environment variables for production, 
+ * with sensible defaults for development
+ */
+const getAllowedOrigins = () => {
+  // Default development origins
+  const defaultOrigins = [
+    'http://localhost:5173',
+    'http://localhost:3000',
+    'http://127.0.0.1:5173',
+    'http://127.0.0.1:3000'
+  ];
+
+  // If CORS_ORIGIN is set, use it (supports comma-separated values)
+  if (process.env.CORS_ORIGIN) {
+    const envOrigins = process.env.CORS_ORIGIN
+      .split(',')
+      .map(origin => origin.trim())
+      .filter(origin => origin.length > 0);
+    
+    // In production, only use environment variable origins
+    if (process.env.NODE_ENV === 'production') {
+      return envOrigins;
+    }
+    
+    // In development, combine with defaults
+    return [...new Set([...defaultOrigins, ...envOrigins])];
+  }
+
+  // Fallback to defaults if no environment variable is set
+  return defaultOrigins;
+};
+
 const corsOptions = {
-  origin: [
-    'http://localhost:5173',                                // Frontend on port 5173 (new mapping)
-    'http://localhost',                                     // Frontend on port 80 (legacy)
-    'http://localhost:80',                                  // Frontend on port 80 (explicit)
-    'http://127.0.0.1:5173',                                // Alternative localhost port 5173
-    'http://127.0.0.1',                                     // Alternative localhost
-    'http://127.0.0.1:80',                                  // Alternative localhost port 80
-    'http://164.92.147.166:5173',
-    'http://46.101.181.187:5173',                           // Remote server for testing
+  origin: (origin, callback) => {
+    const allowedOrigins = getAllowedOrigins();
+    
+    // Allow requests with no origin (like mobile apps, Postman, or curl requests)
+    if (!origin) {
+      return callback(null, true);
+    }
 
-
-    'http://0.0.0.0',
-    'https://theeyeball-fe-production.up.railway.app',
-
-    'https://theeyeball-production.up.railway.app:3000',    // Railway production domain
-    'https://theeyeball-production.up.railway.app/login',   // Railway production domain
-    'https://theeyeball-production.up.railway.app',         // Railway production domain
-    'https://theeyeball.railway.internal'                   // Railway internal domain
-  ],
+    // Check if origin is in allowed list
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      // In development, log warning but allow (for easier local testing)
+      if (process.env.NODE_ENV === 'development') {
+        console.warn(`CORS: Allowing origin ${origin} in development mode`);
+        return callback(null, true);
+      }
+      
+      // In production, reject unknown origins
+      callback(new Error(`Not allowed by CORS: ${origin}`));
+    }
+  },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
