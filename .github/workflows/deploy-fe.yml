@@ -8,15 +8,18 @@ on:
   #     - 'frontend/**'
   #     - '.github/workflows/deploy-fe.yml'
 
-env:
-  PROD_FE_HOOK: ${{ env.PROD_FE_HOOK || secrets.PROD_FE_HOOK || 'http://localhost:5173/deploy' }}
-  FE_URL: ${{ env.FE_URL || secrets.FE_URL || 'http://localhost:5173' }}
-
 jobs:
   deploy-frontend:
     runs-on: ubuntu-latest
+    environment: production
     
     steps:
+      - name: Set environment variables
+        id: vars
+        run: |
+          PROD_FE_HOOK="${{ vars.PROD_FE_HOOK || secrets.PROD_FE_HOOK || 'http://localhost:5173/deploy' }}"
+          FE_URL="${{ vars.FE_URL || secrets.FE_URL || 'http://localhost:5173' }}"
+      
       - name: Checkout repository
         uses: actions/checkout@v4
       
@@ -85,4 +88,4 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "- **Deployment Hook**: ${{ steps.deploy.outcome == 'success' && '✅ Success' || '❌ Failed' }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Health Check**: ${{ steps.health_check.outcome == 'success' && '✅ Healthy' || '❌ Unhealthy' }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Frontend URL**: ${{ env.FE_URL || secrets.FE_URL || 'http://localhost:5173' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Frontend URL**: ${{ vars.FE_URL || secrets.FE_URL || 'http://localhost:5173' }}" >> $GITHUB_STEP_SUMMARY

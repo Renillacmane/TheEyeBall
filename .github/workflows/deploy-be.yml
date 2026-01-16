@@ -8,15 +8,18 @@ on:
   #     - 'backend/**'
   #     - '.github/workflows/deploy-be.yml'
 
-env:
-  PROD_BE_HOOK: ${{ env.PROD_BE_HOOK || secrets.PROD_BE_HOOK || 'http://localhost:3000/deploy' }}
-  BE_URL: ${{ env.BE_URL || secrets.BE_URL || 'http://localhost:3000' }}
-
 jobs:
   deploy-backend:
     runs-on: ubuntu-latest
+    environment: production
     
     steps:
+      - name: Set environment variables
+        id: vars
+        run: |
+          PROD_BE_HOOK="${{ vars.PROD_BE_HOOK || secrets.PROD_BE_HOOK || 'http://localhost:3000/deploy' }}"
+          BE_URL="${{ vars.BE_URL || secrets.BE_URL || 'http://localhost:3000' }}"
+      
       - name: Checkout repository
         uses: actions/checkout@v4
       
@@ -85,4 +88,4 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "- **Deployment Hook**: ${{ steps.deploy.outcome == 'success' && '✅ Success' || '❌ Failed' }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Health Check**: ${{ steps.health_check.outcome == 'success' && '✅ Healthy' || '❌ Unhealthy' }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Backend URL**: ${{ env.BE_URL || secrets.BE_URL || 'http://localhost:3000' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Backend URL**: ${{ vars.BE_URL || secrets.BE_URL || 'http://localhost:3000' }}" >> $GITHUB_STEP_SUMMARY
