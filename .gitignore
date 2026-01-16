@@ -94,3 +94,6 @@ docker/image_management/images/
 # OS
 .DS_Store
 Thumbs.db
+
+# Build outputs
+frontend/dist/

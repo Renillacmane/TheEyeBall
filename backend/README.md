@@ -1,14 +1,53 @@
-# TheEyeBall
+# TheEyeBall Backend
 
-# how to run
+Node.js/Express backend API for TheEyeBall movie discovery platform.
 
+## Quick Start
+
+### Development
+```bash
 npm run dev
+```
+Runs the server with nodemon for hot-reloading.
 
-# token 24 horas
+### Production
+```bash
+npm start
+```
+Runs the production server directly from source (standard Node.js behavior).
 
-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7Il9pZCI6IjY2OTc5ODcyMWY2MmI3OTQ0NTcxNTg4NiIsImVtYWlsIjoici5sYWNtYW5lMTdAcnVudGltZS1yZXZvbHV0aW9uLmNvbSJ9LCJpYXQiOjE3MjEyMTEwNDksImV4cCI6MTcyMTIxNDY0OSwiaXNzIjoiVGhlIEV5ZWJhbGwifQ.jdtb5AhNTMzZJ1NJRiHNVT56lchT7LjUlSt-RPOat4U
+## Available Scripts
 
+- `npm run dev` - Start development server with nodemon
+- `npm start` - Start production server
 
+## Environment Setup
 
-User
-r.lacmane15@runtime-revolution.com
+1. Copy the environment template:
+   ```bash
+   cp env.template .env
+   ```
+
+2. Edit `.env` with your configuration values.
+
+## Project Structure
+
+```
+backend/
+├── bin/           # Server entry point
+├── routes/        # API routes
+├── services/      # Business logic
+├── models/        # Mongoose models
+├── middleware/    # Express middleware
+├── providers/     # External service integrations (TMDB)
+├── auth/          # Authentication strategies
+├── database/      # Database initialization
+├── utils/         # Utility functions
+└── scripts/       # Utility scripts
+```
+
+## Notes
+
+- The backend runs directly without a build step (standard Node.js behavior)
+- Node.js executes JavaScript directly, so no compilation or bundling is needed
+- Code runs from the source directory in both development and production
