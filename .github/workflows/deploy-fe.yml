@@ -19,6 +19,8 @@ jobs:
         run: |
           PROD_FE_HOOK="${{ vars.PROD_FE_HOOK || secrets.PROD_FE_HOOK || 'http://localhost:5173/deploy' }}"
           FE_URL="${{ vars.FE_URL || secrets.FE_URL || 'http://localhost:5173' }}"
+          echo "PROD_FE_HOOK=$PROD_FE_HOOK" >> $GITHUB_ENV
+          echo "FE_URL=$FE_URL" >> $GITHUB_ENV
       
       - name: Checkout repository
         uses: actions/checkout@v4

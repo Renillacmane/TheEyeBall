@@ -19,6 +19,8 @@ jobs:
         run: |
           PROD_BE_HOOK="${{ vars.PROD_BE_HOOK || secrets.PROD_BE_HOOK || 'http://localhost:3000/deploy' }}"
           BE_URL="${{ vars.BE_URL || secrets.BE_URL || 'http://localhost:3000' }}"
+          echo "PROD_BE_HOOK=$PROD_BE_HOOK" >> $GITHUB_ENV
+          echo "BE_URL=$BE_URL" >> $GITHUB_ENV
       
       - name: Checkout repository
         uses: actions/checkout@v4

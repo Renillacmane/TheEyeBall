@@ -21,6 +21,8 @@ jobs:
         run: |
           BE_URL="${{ vars.BE_URL || secrets.BE_URL || 'http://localhost:3000' }}"
           FE_URL="${{ vars.FE_URL || secrets.FE_URL || 'http://localhost:5173' }}"
+          echo "BE_URL=$BE_URL" >> $GITHUB_ENV
+          echo "FE_URL=$FE_URL" >> $GITHUB_ENV
       
       - name: Checkout repository
         uses: actions/checkout@v4
