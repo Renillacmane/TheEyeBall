@@ -1,0 +1,96 @@
+name: Health Check
+
+on:
+  workflow_dispatch:
+  # schedule:
+  #   # Run every hour
+  #   - cron: '0 * * * *'
+  # push:
+  #   branches: [ main ]
+  #   paths:
+  #     - '.github/workflows/health-check.yml'
+
+env:
+  BE_URL: ${{ env.BE_URL || secrets.BE_URL || 'http://localhost:3000' }}
+  FE_URL: ${{ env.FE_URL || secrets.FE_URL || 'http://localhost:5173' }}
+
+jobs:
+  health-check:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Backend health check
+        id: backend_health
+        run: |
+          echo "Checking backend health at $BE_URL/health..."
+          response=$(curl -s -w "\n%{http_code}" "$BE_URL/health" || echo -e "\n000")
+          
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | sed '$d')
+          
+          if [ "$http_code" = "200" ]; then
+            echo "✅ Backend is healthy (HTTP $http_code)"
+            echo "$body" | jq '.' 2>/dev/null || echo "$body"
+            echo "status=healthy" >> $GITHUB_OUTPUT
+            echo "http_code=$http_code" >> $GITHUB_OUTPUT
+          else
+            echo "❌ Backend health check failed (HTTP $http_code)"
+            echo "$body"
+            echo "status=unhealthy" >> $GITHUB_OUTPUT
+            echo "http_code=$http_code" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+        continue-on-error: true
+      
+      - name: Frontend health check
+        id: frontend_health
+        run: |
+          echo "Checking frontend health at $FE_URL..."
+          response=$(curl -s -o /dev/null -w "%{http_code}" "$FE_URL" || echo "000")
+          
+          if [ "$response" = "200" ] || [ "$response" = "301" ] || [ "$response" = "302" ]; then
+            echo "✅ Frontend is healthy (HTTP $response)"
+            echo "status=healthy" >> $GITHUB_OUTPUT
+            echo "http_code=$response" >> $GITHUB_OUTPUT
+          else
+            echo "❌ Frontend health check failed (HTTP $response)"
+            echo "status=unhealthy" >> $GITHUB_OUTPUT
+            echo "http_code=$response" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+        continue-on-error: true
+      
+      - name: Health check summary
+        if: always()
+        run: |
+          echo "## Health Check Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Backend" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ steps.backend_health.outcome }}" == "success" ]; then
+            echo "- **Status**: ✅ Healthy (HTTP ${{ steps.backend_health.outputs.http_code }})" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- **Status**: ❌ Unhealthy (HTTP ${{ steps.backend_health.outputs.http_code }})" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "- **URL**: ${{ env.BE_URL || secrets.BE_URL || 'http://localhost:3000' }}/health" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Frontend" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ steps.frontend_health.outcome }}" == "success" ]; then
+            echo "- **Status**: ✅ Healthy (HTTP ${{ steps.frontend_health.outputs.http_code }})" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- **Status**: ❌ Unhealthy (HTTP ${{ steps.frontend_health.outputs.http_code }})" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "- **URL**: ${{ env.FE_URL || secrets.FE_URL || 'http://localhost:5173' }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Timestamp**: $(date -u +'%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY
+          
+          # Set job status based on health checks
+          if [ "${{ steps.backend_health.outcome }}" == "failure" ] || [ "${{ steps.frontend_health.outcome }}" == "failure" ]; then
+            echo "❌ One or more services are unhealthy"
+            exit 1
+          else
+            echo "✅ All services are healthy"
+            exit 0
+          fi

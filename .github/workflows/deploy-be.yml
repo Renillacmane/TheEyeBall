@@ -1,0 +1,88 @@
+name: Deploy Backend
+
+on:
+  workflow_dispatch:
+  # push:
+  #   branches: [ main ]
+  #   paths:
+  #     - 'backend/**'
+  #     - '.github/workflows/deploy-be.yml'
+
+env:
+  PROD_BE_HOOK: ${{ env.PROD_BE_HOOK || secrets.PROD_BE_HOOK || 'http://localhost:3000/deploy' }}
+  BE_URL: ${{ env.BE_URL || secrets.BE_URL || 'http://localhost:3000' }}
+
+jobs:
+  deploy-backend:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Deploy backend
+        id: deploy
+        run: |          
+          echo "Calling deployment hook: $PROD_BE_HOOK"
+          response=$(curl -X POST "$PROD_BE_HOOK" \
+            -H "Content-Type: application/json" \
+            -w "\n%{http_code}" \
+            -s || echo "000")
+          
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | sed '$d')
+          
+          if [ "$http_code" -ge 200 ] && [ "$http_code" -lt 300 ]; then
+            echo "✅ Deployment hook called successfully (HTTP $http_code)"
+            echo "response=$body" >> $GITHUB_OUTPUT
+          else
+            echo "❌ Deployment hook failed (HTTP $http_code)"
+            echo "response=$body" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+      
+      - name: Wait for deployment
+        run: |
+          echo "Waiting 90 seconds for backend to deploy..."
+          sleep 90
+      
+      - name: Health check
+        id: health_check
+        run: |
+          max_attempts=10
+          attempt=1
+          wait_time=10
+          
+          echo "Starting health check for backend at $BE_URL/health..."
+          
+          while [ $attempt -le $max_attempts ]; do
+            echo "Attempt $attempt/$max_attempts: Checking $BE_URL/health..."
+            
+            response=$(curl -s -o /dev/null -w "%{http_code}" "$BE_URL/health" || echo "000")
+            
+            if [ "$response" = "200" ]; then
+              echo "✅ Backend health check passed!"
+              echo "status=healthy" >> $GITHUB_OUTPUT
+              exit 0
+            else
+              echo "⚠️  Health check failed (HTTP $response), waiting ${wait_time}s before retry..."
+              if [ $attempt -lt $max_attempts ]; then
+                sleep $wait_time
+              fi
+            fi
+            
+            attempt=$((attempt + 1))
+          done
+          
+          echo "❌ Health check failed after $max_attempts attempts"
+          echo "status=unhealthy" >> $GITHUB_OUTPUT
+          exit 1
+      
+      - name: Deployment summary
+        if: always()
+        run: |
+          echo "## Backend Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Deployment Hook**: ${{ steps.deploy.outcome == 'success' && '✅ Success' || '❌ Failed' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Health Check**: ${{ steps.health_check.outcome == 'success' && '✅ Healthy' || '❌ Unhealthy' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Backend URL**: ${{ env.BE_URL || secrets.BE_URL || 'http://localhost:3000' }}" >> $GITHUB_STEP_SUMMARY

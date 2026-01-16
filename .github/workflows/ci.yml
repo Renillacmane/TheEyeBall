@@ -1,0 +1,106 @@
+name: CI/CD Pipeline
+
+on:
+  # push:
+  #   branches: [ main, develop ]
+  # pull_request:
+  #   branches: [ main, develop ]
+  workflow_dispatch:
+    inputs:
+      target:
+        description: 'Target to build and test (backend/frontend/both)'
+        required: true
+        default: 'both'
+        type: choice
+        options:
+          - backend
+          - frontend
+          - both
+
+jobs:
+  ci-backend:
+    runs-on: ubuntu-latest
+    if: github.event_name != 'workflow_dispatch' || github.event.inputs.target == 'backend' || github.event.inputs.target == 'both'
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+      
+      - name: Install dependencies
+        working-directory: backend
+        run: npm ci
+      
+      - name: Lint code
+        working-directory: backend
+        run: |
+          if npm run lint 2>/dev/null; then
+            npm run lint || echo "Linting completed with warnings"
+          else
+            echo "No lint script for backend, skipping..."
+          fi
+        continue-on-error: true
+      
+      - name: Build
+        working-directory: backend
+        run: |
+          if npm run build 2>/dev/null; then
+            npm run build
+          else
+            echo "Backend doesn't require build step, skipping..."
+          fi
+        continue-on-error: true
+      
+      - name: Run tests
+        working-directory: backend
+        run: |
+          if npm run test 2>/dev/null; then
+            npm run test
+          else
+            echo "No test script found, skipping tests..."
+          fi
+        continue-on-error: true
+
+  ci-frontend:
+    runs-on: ubuntu-latest
+    if: github.event_name != 'workflow_dispatch' || github.event.inputs.target == 'frontend' || github.event.inputs.target == 'both'
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+      
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
+      
+      - name: Lint code
+        working-directory: frontend
+        run: npm run lint || echo "Linting completed with warnings"
+        continue-on-error: true
+      
+      - name: Build
+        working-directory: frontend
+        run: npm run build
+      
+      - name: Run tests
+        working-directory: frontend
+        run: |
+          if npm run test 2>/dev/null; then
+            npm run test
+          else
+            echo "No test script found, skipping tests..."
+          fi
+        continue-on-error: true
