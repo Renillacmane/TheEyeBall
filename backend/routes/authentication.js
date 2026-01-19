@@ -1,13 +1,17 @@
 const express = require('express');
 const passport = require('passport');
 const jwt = require('jsonwebtoken');
-const { promisify } = require('util');
 const UserModel = require('../models/user');
 const { ValidationError, InvalidCredentialsError } = require('../errors/auth-errors');
 
 const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '24h';
 const APP_NAME = process.env.APP_NAME;
+
+// Validate required environment variables at startup
+if (!JWT_SECRET) {
+  console.error('FATAL: JWT_SECRET environment variable is not set');
+}
 
 const router = express.Router();
 
@@ -37,7 +41,10 @@ router.post('/signup',
               lastName: user.lastName
             };
             
-            const token = await promisify(jwt.sign)(
+            if (!JWT_SECRET) {
+              throw new Error('JWT_SECRET is not configured');
+            }
+            const token = jwt.sign(
               { user: body },
               JWT_SECRET,
               { expiresIn: JWT_EXPIRES_IN, issuer: APP_NAME }
@@ -88,7 +95,10 @@ router.post( '/login', (req, res, next) => {
         lastName: user.lastName
       };
       try {
-        const token = await promisify(jwt.sign)(
+        if (!JWT_SECRET) {
+          throw new Error('JWT_SECRET is not configured');
+        }
+        const token = jwt.sign(
           { user: body },
           JWT_SECRET,
           { expiresIn: JWT_EXPIRES_IN, issuer: APP_NAME }
@@ -98,6 +108,7 @@ router.post( '/login', (req, res, next) => {
           user: body
         });
       } catch (err) {
+        console.error('Token generation failed:', err.message);
         throw new Error('Failed to generate authentication token');
       }
     } catch (error) {
