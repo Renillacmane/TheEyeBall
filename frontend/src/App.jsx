@@ -4,6 +4,7 @@ import SignUp from './layouts/sign-up/SignUp';
 import Settings from './layouts/settings/Settings';
 import MyPicks from './layouts/my-picks/MyPicks';
 import MoviesPage from './pages/movies/MoviesPage';
+import MovieDetailPage from './pages/movies/MovieDetailPage';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import './App.css';
 
@@ -42,6 +43,11 @@ function AppRoutes() {
             endpoint="/movies/search"
           />
         ) : <Navigate to="/signin" replace />
+      } />
+
+      {/* Movie Detail Route */}
+      <Route path="/movies/:id" element={
+        isAuthenticated ? <MovieDetailPage /> : <Navigate to="/signin" replace />
       } />
 
       {/* My Picks Route */}

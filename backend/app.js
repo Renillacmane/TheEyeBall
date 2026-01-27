@@ -1,4 +1,20 @@
-require('dotenv').config();
+// Load environment variables with proper precedence
+// Order (lowest to highest priority):
+// 1. .env (base defaults)
+// 2. .env.local (local overrides for all environments)
+// 3. .env.{NODE_ENV} (environment-specific, e.g., .env.development, .env.production)
+// 4. .env.{NODE_ENV}.local (local overrides for specific environment)
+require('dotenv').config(); // Load .env first
+
+// Load .env.local if it exists (local overrides for all environments)
+require('dotenv').config({ path: '.env.local', override: true });
+
+// Load environment-specific file (e.g., .env.development, .env.production)
+const env = process.env.NODE_ENV || 'development';
+require('dotenv').config({ path: `.env.${env}`, override: true });
+
+// Load environment-specific local file (e.g., .env.development.local)
+require('dotenv').config({ path: `.env.${env}.local`, override: true });
 
 const express = require('express');
 const path = require('path');

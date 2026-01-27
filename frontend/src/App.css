@@ -1,8 +1,41 @@
 #root {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 0;
   text-align: center;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+@media (min-width: 1280px) {
+  #root {
+    max-width: 1280px;
+    margin: 0 auto;
+  }
+}
+
+@media (min-width: 600px) {
+  #root {
+    padding: 0.5rem;
+  }
+}
+
+@media (min-width: 960px) {
+  #root {
+    padding: 1rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  #root {
+    padding: 1.5rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  #root {
+    padding: 2rem;
+  }
 }
 
 .logo {

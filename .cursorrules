@@ -3,6 +3,15 @@
 ## Project Overview
 TheEyeBall is an intelligent movie discovery platform with Node.js/Express backend and React frontend using Material-UI. The platform features sophisticated recommendation algorithms, community-driven insights, and personalized movie discovery.
 
+## Memory Bank Documentation
+Reference these files for detailed project context:
+- `memory-bank/activeContext.md` - Current focus and recent changes
+- `memory-bank/techContext.md` - Technology stack and dependencies
+- `memory-bank/systemPatterns.md` - Architecture diagrams and patterns
+- `memory-bank/progress.md` - Feature completion status
+- `memory-bank/productContext.md` - Product requirements and user experience
+- `memory-bank/projectbrief.md` - Project overview and goals
+
 ## Core Architecture Patterns
 - **Service Layer Pattern**: Keep business logic in services/, routes should be thin controllers
 - **Repository Pattern**: Use Mongoose ODM for MongoDB operations with clear model separation
@@ -13,11 +22,13 @@ TheEyeBall is an intelligent movie discovery platform with Node.js/Express backe
 - **Optimistic UI Updates**: Immediate frontend feedback with background server sync
 
 ## Technology Stack
-- **Backend**: Node.js, Express.js, MongoDB, Mongoose, Passport.js, JWT, Axios, BCrypt
+- **Backend**: Node.js, Express.js, MongoDB, Mongoose, Passport.js, JWT, Axios, bcryptjs
 - **Frontend**: React 18, Material-UI, Vite, React Router, Axios, Emotion
 - **External Services**: TMDB API integration
 - **Security**: Helmet, CORS, Rate Limiting, JWT authentication
+- **Logging**: Winston with daily rotating log files
 - **Development**: Nodemon, ESLint, Prettier, Hot Module Replacement
+- **Deployment**: Docker with nginx reverse proxy
 
 ## Code Standards & Conventions
 - **Naming**: camelCase for variables/functions, PascalCase for React components, kebab-case for files
@@ -31,7 +42,7 @@ TheEyeBall is an intelligent movie discovery platform with Node.js/Express backe
 - **Input Validation**: Always validate and sanitize user inputs
 - **Authentication**: JWT-based stateless authentication with Passport.js
 - **Authorization**: Protected routes with proper middleware checks
-- **Password Security**: BCrypt hashing with appropriate salt rounds
+- **Password Security**: bcryptjs hashing with appropriate salt rounds
 - **Environment Security**: Sensitive data in environment variables only
 - **CORS Configuration**: Proper cross-origin request handling
 - **Rate Limiting**: API abuse prevention with express-rate-limit

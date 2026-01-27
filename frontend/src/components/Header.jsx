@@ -14,6 +14,7 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import LogoutIcon from '@mui/icons-material/Logout';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import ListItemIcon from '@mui/material/ListItemIcon';
+import { useMediaQuery, useTheme } from '@mui/material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { styled } from '@mui/material/styles';
@@ -34,10 +35,16 @@ const SearchInput = styled('input')(({ theme }) => ({
   },
   '&::placeholder': {
     color: 'rgba(196, 93, 60, 0.6)',
-  }
+  },
+  [theme.breakpoints.down('sm')]: {
+    fontSize: '0.8rem',
+    padding: '6px 10px',
+  },
 }));
 
 function Header() {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const navigate = useNavigate();
   const location = useLocation();
   
@@ -77,11 +84,12 @@ function Header() {
         sx={{ 
           borderBottom: 1, 
           borderColor: 'rgba(196, 93, 60, 0.1)',
-          mb: 3,
-          minHeight: '110px',
+          mb: { xs: 2, md: 3 },
+          minHeight: { xs: '70px', md: '110px' },
           display: 'flex',
           alignItems: 'center',
-          px: 2
+          px: { xs: 1, md: 2 },
+          justifyContent: 'space-between'
         }}
       >
         <Box
@@ -89,13 +97,13 @@ function Header() {
           src={banner}
           alt="TheEyeBall"
           sx={{
-            height: '90px',
+            height: { xs: '60px', md: '90px' },
             width: 'auto',
-            mr: 3
+            mr: { xs: 1, md: 3 }
           }}
           id="header-logo"
         />
-        <Box sx={{ display: 'flex', gap: 3 }} id="navigation-links">
+        <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 3 }} id="navigation-links">
           <Link
             id="nav-eyeballed-for-you"
             color="inherit"
@@ -179,7 +187,8 @@ function Header() {
             display: 'flex',
             alignItems: 'center',
             gap: 1,
-            mx: 3
+            mx: { xs: 1, md: 3 },
+            maxWidth: { xs: '200px', sm: '300px', md: 'none' }
           }}
         >
           <SearchInput
@@ -220,7 +229,7 @@ function Header() {
           aria-haspopup="true"
           aria-expanded={open ? 'true' : undefined}
           sx={{
-            ml: 2,
+            ml: { xs: 1, md: 2 },
             display: 'flex',
             alignItems: 'center',
             cursor: 'pointer',
@@ -239,9 +248,9 @@ function Header() {
             aria-label="User profile picture"
             sx={{
               bgcolor: '#c45d3c',
-              width: 35,
-              height: 35,
-              fontSize: '0.9rem'
+              width: { xs: 30, md: 35 },
+              height: { xs: 30, md: 35 },
+              fontSize: { xs: '0.8rem', md: '0.9rem' }
             }}
           >
             <AccountCircleIcon />
@@ -251,8 +260,9 @@ function Header() {
             sx={{
               ml: 1,
               color: '#c45d3c',
-              fontSize: '0.875rem',
-              fontWeight: 500
+              fontSize: { xs: '0.75rem', md: '0.875rem' },
+              fontWeight: 500,
+              display: { xs: 'none', sm: 'block' } // Hide text on very small screens
             }}
           >
             {getUserDisplay()}

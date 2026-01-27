@@ -4,7 +4,7 @@ import YouTube from 'react-youtube';
 import { 
   Dialog, DialogContent, IconButton, Typography, Box, 
   CircularProgress, Alert, Chip, Grid, Divider, 
-  ImageList, ImageListItem
+  ImageList, ImageListItem, useMediaQuery, useTheme
 } from '@mui/material';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import MovieIcon from '@mui/icons-material/Movie';
@@ -20,6 +20,8 @@ import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import RatingBadge from './RatingBadge';
 
 function MovieModal({ open, onClose, movie, onNext, onPrevious, isFirst, isLast, onReaction }) {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [isMaximized, setIsMaximized] = React.useState(false);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [movieDetails, setMovieDetails] = React.useState(null);
@@ -136,48 +138,68 @@ function MovieModal({ open, onClose, movie, onNext, onPrevious, isFirst, isLast,
     <Dialog
       open={open}
       onClose={handleClose}
+      fullScreen={isMobile}
       PaperProps={{
         sx: {
-          width: isMaximized ? '100vw' : '900px',
-          maxWidth: isMaximized ? '100vw' : '90vw',
-          height: isMaximized ? '100vh' : '450px',
+          width: isMobile ? '100%' : isMaximized ? '100vw' : '900px',
+          maxWidth: isMobile ? '100%' : isMaximized ? '100vw' : '90vw',
+          height: isMobile ? '100vh' : isMaximized ? '100vh' : '450px',
+          maxHeight: isMobile ? '100vh' : isMaximized ? '100vh' : '90vh',
           position: 'relative',
-          margin: isMaximized ? 0 : '40px',
-          transition: 'all 0.3s ease-in-out'
+          margin: isMobile ? 0 : isMaximized ? 0 : '40px',
+          transition: 'all 0.3s ease-in-out',
+          borderRadius: isMobile ? 0 : 1,
+          m: isMobile ? 0 : undefined
         }
       }}
       sx={{
         '.MuiDialog-container': {
-          alignItems: 'center',
-          justifyContent: 'center'
+          alignItems: isMobile ? 'stretch' : 'center',
+          justifyContent: isMobile ? 'stretch' : 'center',
+          padding: isMobile ? 0 : undefined
+        },
+        '.MuiBackdrop-root': {
+          backgroundColor: 'rgba(0, 0, 0, 0.5)'
+        },
+        '.MuiDialog-paper': {
+          m: isMobile ? 0 : undefined
         }
       }}
     >
-      <Box sx={{ position: 'fixed', right: '20px', top: '20px', zIndex: 1500, display: 'flex', gap: 1 }}>
-        <IconButton
-          onClick={handleMaximizeToggle}
-          sx={{
-            padding: '8px',
-            color: '#e17055',
-            backgroundColor: '#fff',
-            boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
-            '&:hover': {
+      <Box sx={{ 
+        position: 'absolute', 
+        right: { xs: '8px', md: '20px' }, 
+        top: { xs: '8px', md: '20px' }, 
+        zIndex: 1500, 
+        display: 'flex', 
+        gap: { xs: 0.5, md: 1 } 
+      }}>
+        {!isMobile && (
+          <IconButton
+            onClick={handleMaximizeToggle}
+            sx={{
+              padding: { xs: '6px', md: '8px' },
+              color: '#e17055',
               backgroundColor: '#fff',
-              color: '#c45d3c',
-              transform: 'scale(1.1)',
-            },
-            transition: 'transform 0.2s ease-in-out',
-            '&:focus': {
-              outline: 'none',
-            }
-          }}
-        >
-          {isMaximized ? <CloseFullscreenIcon /> : <OpenInFullIcon />}
-        </IconButton>
+              boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+              '&:hover': {
+                backgroundColor: '#fff',
+                color: '#c45d3c',
+                transform: 'scale(1.1)',
+              },
+              transition: 'transform 0.2s ease-in-out',
+              '&:focus': {
+                outline: 'none',
+              }
+            }}
+          >
+            {isMaximized ? <CloseFullscreenIcon /> : <OpenInFullIcon />}
+          </IconButton>
+        )}
         <IconButton
           onClick={handleClose}
           sx={{
-            padding: '8px',
+            padding: { xs: '6px', md: '8px' },
             color: '#e17055',
             backgroundColor: '#fff',
             boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
@@ -192,10 +214,17 @@ function MovieModal({ open, onClose, movie, onNext, onPrevious, isFirst, isLast,
             }
           }}
         >
-          <CloseIcon />
+          <CloseIcon sx={{ fontSize: { xs: '20px', md: '24px' } }} />
         </IconButton>
       </Box>
-      <DialogContent sx={{ p: 0, position: 'relative', overflow: 'hidden' }}>
+      <DialogContent sx={{ 
+        p: 0, 
+        position: 'relative', 
+        overflow: 'hidden',
+        height: isMobile ? '100%' : 'auto',
+        width: '100%',
+        m: 0
+      }}>
         {backdropUrl && (
           <Box
             sx={{
@@ -216,17 +245,19 @@ function MovieModal({ open, onClose, movie, onNext, onPrevious, isFirst, isLast,
         <Box sx={{ 
           display: 'flex', 
           flexDirection: { xs: 'column', md: 'row' }, 
-          height: isMaximized ? '100vh' : '450px',
+          height: isMobile ? '100vh' : isMaximized ? '100vh' : '450px',
+          minHeight: isMobile ? '100vh' : '450px',
           transition: 'height 0.3s ease-in-out',
           position: 'relative',
-          zIndex: 2
+          zIndex: 2,
+          width: '100%'
         }}>
           <Box
             component="img"
             sx={{
               width: { xs: '100%', md: isMaximized ? '500px' : '300px' },
-              height: { xs: '300px', md: '100%' },
-              objectFit: isMaximized ? 'contain' : 'cover',
+              height: { xs: '180px', sm: '220px', md: '100%' },
+              objectFit: { xs: 'cover', md: isMaximized ? 'contain' : 'cover' },
               flexShrink: 0,
               position: 'relative'
             }}
@@ -235,10 +266,11 @@ function MovieModal({ open, onClose, movie, onNext, onPrevious, isFirst, isLast,
           />
           
           <Box sx={{ 
-            p: 3, 
+            p: { xs: 2, sm: 2.5, md: 3 }, 
             flexGrow: 1, 
             overflow: 'auto', 
-            height: isMaximized ? '100vh' : '450px',
+            height: isMobile ? 'calc(90vh - 180px)' : isMaximized ? '100vh' : '450px',
+            minHeight: isMobile ? '300px' : 'auto',
             transition: 'height 0.3s ease-in-out'
           }}>
             {loading ? (
@@ -278,7 +310,15 @@ function MovieModal({ open, onClose, movie, onNext, onPrevious, isFirst, isLast,
                     </Box>
                     <Box sx={{ flex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                       <Box sx={{ display: 'flex', flexDirection: 'column', position: 'relative', width: '100%' }}>
-                        <Typography variant="h4" sx={{ color: '#c45d3c', fontWeight: 600, pr: 7 }}>
+                        <Typography 
+                          variant="h4" 
+                          sx={{ 
+                            color: '#c45d3c', 
+                            fontWeight: 600, 
+                            pr: { xs: 5, md: 7 },
+                            fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2.125rem' }
+                          }}
+                        >
                           {displayMovie.title}
                         </Typography>
                         {displayMovie.tagline && (
@@ -288,7 +328,8 @@ function MovieModal({ open, onClose, movie, onNext, onPrevious, isFirst, isLast,
                               color: '#888', 
                               fontStyle: 'italic',
                               mt: 0.5,
-                              pr: 7
+                              pr: { xs: 5, md: 7 },
+                              fontSize: { xs: '0.75rem', md: '0.875rem' }
                             }}
                           >
                             "{displayMovie.tagline}"
@@ -303,9 +344,9 @@ function MovieModal({ open, onClose, movie, onNext, onPrevious, isFirst, isLast,
                             top: '50%',
                             transform: 'translateY(-50%)',
                             color: '#e17055',
-                            padding: 2,
+                            padding: { xs: 1, md: 2 },
                             '& .MuiSvgIcon-root': {
-                              fontSize: 34
+                              fontSize: { xs: 28, md: 34 }
                             },
                             '&:hover': {
                               color: '#e17055',
@@ -531,7 +572,11 @@ function MovieModal({ open, onClose, movie, onNext, onPrevious, isFirst, isLast,
                         </Box>
                       </Box>
                     )}
-                    <ImageList cols={2} gap={8} sx={{ mb: 2 }}>
+                    <ImageList 
+                      cols={isMobile ? 1 : 2} 
+                      gap={isMobile ? 4 : 8} 
+                      sx={{ mb: 2 }}
+                    >
                       {displayMovie.backdrops.slice(0, 4).map((image, index) => (
                         <ImageListItem key={index}>
                           <Box
@@ -556,43 +601,47 @@ function MovieModal({ open, onClose, movie, onNext, onPrevious, isFirst, isLast,
           </Box>
         </Box>
 
-        <IconButton
-          onClick={onPrevious}
-          disabled={isFirst}
-          sx={{
-            position: 'absolute',
-            left: 8,
-            top: '50%',
-            transform: 'translateY(-50%)',
-            color: 'white',
-            backgroundColor: 'rgba(0, 0, 0, 0.5)',
-            zIndex: 10,
-            '&:hover': {
-              backgroundColor: 'rgba(0, 0, 0, 0.7)',
-            },
-          }}
-        >
-          <ChevronLeftIcon />
-        </IconButton>
+        {!isMobile && (
+          <>
+            <IconButton
+              onClick={onPrevious}
+              disabled={isFirst}
+              sx={{
+                position: 'absolute',
+                left: 8,
+                top: '50%',
+                transform: 'translateY(-50%)',
+                color: 'white',
+                backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                zIndex: 10,
+                '&:hover': {
+                  backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                },
+              }}
+            >
+              <ChevronLeftIcon />
+            </IconButton>
 
-        <IconButton
-          onClick={onNext}
-          disabled={isLast}
-          sx={{
-            position: 'absolute',
-            right: 8,
-            top: '50%',
-            transform: 'translateY(-50%)',
-            color: 'white',
-            backgroundColor: 'rgba(0, 0, 0, 0.5)',
-            zIndex: 10,
-            '&:hover': {
-              backgroundColor: 'rgba(0, 0, 0, 0.7)',
-            },
-          }}
-        >
-          <ChevronRightIcon />
-        </IconButton>
+            <IconButton
+              onClick={onNext}
+              disabled={isLast}
+              sx={{
+                position: 'absolute',
+                right: 8,
+                top: '50%',
+                transform: 'translateY(-50%)',
+                color: 'white',
+                backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                zIndex: 10,
+                '&:hover': {
+                  backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                },
+              }}
+            >
+              <ChevronRightIcon />
+            </IconButton>
+          </>
+        )}
       </DialogContent>
     </Dialog>
   );
