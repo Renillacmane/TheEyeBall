@@ -96,10 +96,12 @@ function Header() {
           component="img"
           src={banner}
           alt="TheEyeBall"
+          onClick={() => navigate('/movies/upcoming')}
           sx={{
             height: { xs: '60px', md: '90px' },
             width: 'auto',
-            mr: { xs: 1, md: 3 }
+            mr: { xs: 1, md: 3 },
+            cursor: 'pointer'
           }}
           id="header-logo"
         />

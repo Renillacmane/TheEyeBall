@@ -15,9 +15,9 @@ function BottomNav() {
 
   // Determine the current value based on the pathname
   const getCurrentValue = () => {
-    if (location.pathname === '/movies/eyeballed') return 0;
-    if (location.pathname === '/movies/upcoming') return 1;
-    if (location.pathname === '/movies/playing') return 2;
+    if (location.pathname === '/movies/upcoming') return 0;
+    if (location.pathname === '/movies/playing') return 1;
+    if (location.pathname === '/movies/eyeballed') return 2;
     if (location.pathname === '/movies/top-rated') return 3;
     if (location.pathname === '/my-picks') return 4;
     return -1; // No match
@@ -34,13 +34,13 @@ function BottomNav() {
     setValue(newValue);
     switch (newValue) {
       case 0:
-        navigate('/movies/eyeballed');
-        break;
-      case 1:
         navigate('/movies/upcoming');
         break;
-      case 2:
+      case 1:
         navigate('/movies/playing');
+        break;
+      case 2:
+        navigate('/movies/eyeballed');
         break;
       case 3:
         navigate('/movies/top-rated');
@@ -81,12 +81,15 @@ function BottomNav() {
               color: '#c45d3c',
             },
           },
+          // Lock label size for all actions (selected and unselected)
+          '& .MuiBottomNavigationAction-label': {
+            fontSize: '0.75rem',
+          },
+          '& .MuiBottomNavigationAction-label.Mui-selected': {
+            fontSize: '0.75rem',
+          },
         }}
       >
-        <BottomNavigationAction
-          label="EyeBalled"
-          icon={<FavoriteIcon />}
-        />
         <BottomNavigationAction
           label="Upcoming"
           icon={<UpcomingIcon />}
@@ -94,6 +97,21 @@ function BottomNav() {
         <BottomNavigationAction
           label="Playing"
           icon={<PlayArrowIcon />}
+        />
+        <BottomNavigationAction
+          label="EyeBalled"
+          icon={<FavoriteIcon />}
+          sx={{'& .MuiBottomNavigationAction-label': {
+              fontWeight: 800,
+            },
+            // Lock label size for all actions (selected and unselected)
+            '& .MuiBottomNavigationAction-label': {
+              fontSize: '1.0rem',
+            },
+            '& .MuiBottomNavigationAction-label.Mui-selected': {
+              fontSize: '1.0rem',
+            },
+          }}
         />
         <BottomNavigationAction
           label="Top Rated"

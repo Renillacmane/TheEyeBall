@@ -4,6 +4,7 @@ import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
+import BottomNav from '../../components/BottomNav';
 import { useAuth } from '../../contexts/AuthContext';
 import { MoviesService, REACTIONS } from '../../services/moviesService';
 
@@ -242,6 +243,7 @@ function MyPicks() {
         title="TheEyeBall"
         description="Discover your next favorite movie"
       />
+      <BottomNav />
     </Box>
   );
 }
